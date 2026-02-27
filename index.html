@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Hare Health</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1014; --surface:#161A20; --surface2:#1C2028; --border:#252A33;
+  --accent:#1E88E5; --adim:rgba(30,136,229,0.12);
+  --green:#2ECC71; --gdim:rgba(46,204,113,0.12);
+  --red:#E53935; --orange:#FF9800; --purple:#AB47BC;
+  --text:#F0F2F5; --text2:#8B919C; --text3:#555C68;
+  --mono:'DM Mono',monospace; --sans:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);}
+.screen{display:none;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* AUTH */
+#login,#register{
+  min-height:100vh;
+  align-items:center;
+  justify-content:center;
+  padding:48px 24px;
+  background:#0E1014;
+  background-image:radial-gradient(ellipse at 50% 0%, rgba(30,136,229,0.04) 0%, transparent 70%);
+}
+.auth-card{
+  width:100%;
+  max-width:400px;
+  opacity:0;
+  animation:cardFadeIn 0.5s ease-out 0.25s forwards;
+}
+@keyframes cardFadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+/* Logo block */
+.logo-block{
+  padding:12px 0 24px;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+.logo-img-wrap{
+  margin-bottom:16px;
+}
+.logo-img-wrap img{
+  height:46px;
+  width:auto;
+  display:block;
+}
+.auth-headline{
+  font-size:30px;
+  font-weight:800;
+  letter-spacing:-0.025em;
+  line-height:1.1;
+  margin-bottom:8px;
+  color:var(--text);
+}
+.auth-tagline{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.14em;
+  color:var(--text3);
+  text-transform:uppercase;
+  opacity:0.87;
+  margin:0;
+}
+
+/* Divider */
+.auth-divider{
+  height:1px;
+  background:var(--border);
+  margin:24px 0;
+}
+
+/* Form */
+.field-group{display:flex;flex-direction:column;gap:14px;margin-bottom:20px;}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+.field input{
+  display:block;width:100%;
+  background:rgba(22,26,32,0.8);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:15px 16px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:15px;
+  outline:none;
+  -webkit-appearance:none;
+  appearance:none;
+  transition:border-color 0.15s, box-shadow 0.15s;
+}
+.field input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(30,136,229,0.10);
+}
+.field input::placeholder{color:var(--text3);}
+
+/* CTA */
+.btn-primary{
+  display:block;width:100%;
+  background:var(--accent);
+  color:#fff;border:none;
+  border-radius:6px;
+  padding:17px;
+  font-family:var(--sans);
+  font-size:14px;font-weight:700;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  cursor:pointer;
+  margin-bottom:0;
+  transition:background 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover{
+  background:#1976D2;
+  box-shadow:0 0 0 3px rgba(30,136,229,0.18);
+}
+.btn-primary:active{background:#1565C0;box-shadow:none;}
+
+/* Trust signal */
+.auth-trust{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:0.1em;
+  color:var(--text3);
+  text-align:center;
+  opacity:0.78;
+  margin:10px 0 16px;
+}
+
+/* Secondary button */
+.btn-secondary{
+  display:block;width:100%;
+  background:transparent;
+  color:var(--text3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:14px;
+  font-family:var(--sans);
+  font-size:13px;font-weight:500;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:border-color 0.15s, color 0.15s;
+}
+.btn-secondary:hover{border-color:var(--text3);color:var(--text);}
+.btn-secondary:active{background:var(--surface2);}
+
+/* Demo box */
+.demo-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 16px;
+  margin-bottom:20px;
+}
+.demo-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.demo-row{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.demo-creds{display:flex;flex-direction:column;gap:4px;}
+.demo-cred{font-family:var(--mono);font-size:12px;color:var(--text);}
+.demo-cred span{color:var(--text3);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;margin-right:8px;}
+.use-demo-btn{
+  flex-shrink:0;
+  background:var(--adim);
+  border:1px solid rgba(30,136,229,0.3);
+  color:var(--accent);
+  font-family:var(--mono);font-size:10px;
+  letter-spacing:0.12em;text-transform:uppercase;
+  padding:8px 14px;border-radius:4px;cursor:pointer;
+  transition:background 0.15s;
+}
+.use-demo-btn:hover{background:rgba(30,136,229,0.2);}
+
+/* Error */
+.form-err{
+  font-family:var(--mono);font-size:11px;color:var(--red);
+  padding:10px 14px;background:rgba(229,57,53,0.08);
+  border:1px solid rgba(229,57,53,0.2);border-radius:6px;
+  margin-bottom:14px;text-align:center;
+}
+
+/* Footer badges */
+.auth-footer{margin-top:28px;display:flex;align-items:center;gap:14px;justify-content:center;}
+.sec-badge{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);opacity:0.7;}
+.sec-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
+.dot-sep{width:3px;height:3px;border-radius:50%;background:var(--border);}
+
+/* Remembered */
+.remembered{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding:0 2px;}
+.remembered-lbl{font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:0.08em;}
+.forget-btn{background:none;border:none;font-family:var(--mono);font-size:10px;color:var(--text3);cursor:pointer;text-decoration:underline;}
+
+/* ECG waveform on login */
+.login-ecg{
+  width:100%;
+  height:32px;
+  margin:18px 0 0;
+  display:block;
+  overflow:visible;
+}
+.login-ecg polyline{
+  stroke-dasharray:600;
+  stroke-dashoffset:600;
+  opacity:0;
+  animation:ecgDraw 0.6s ease-in-out 0.7s forwards;
+}
+@keyframes ecgDraw{
+  0%{stroke-dashoffset:600;opacity:0;}
+  10%{opacity:1;}
+  100%{stroke-dashoffset:0;opacity:0.4;}
+}
+
+
+/* TOP BAR *//* TOP BAR */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid var(--border);}
+.top-logo{display:flex;align-items:center;gap:8px;}
+.top-name{font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);}
+.top-right{display:flex;align-items:center;gap:8px;}
+.icon-btn{width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.icon-btn:active{background:var(--surface2);}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;}
+
+/* STATUS */
+.status-section{padding:22px 24px 0;}
+.greeting-lbl{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;}
+.status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.status-headline{font-size:24px;font-weight:800;letter-spacing:-0.02em;}
+.status-badge{display:flex;align-items:center;gap:7px;background:var(--gdim);border:1px solid rgba(46,204,113,0.2);border-radius:20px;padding:5px 12px;}
+.status-badge.elevated{background:rgba(255,152,0,0.12);border-color:rgba(255,152,0,0.25);}
+.status-badge.elevated .s-dot,.status-badge.elevated .s-lbl{background:var(--orange);color:var(--orange);}
+.status-badge.alert{background:rgba(229,57,53,0.12);border-color:rgba(229,57,53,0.25);}
+.status-badge.alert .s-dot{background:var(--red);}
+.status-badge.alert .s-lbl{color:var(--red);}
+.s-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.s-lbl{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);}
+.status-sub{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.04em;}
+.ecg-line{width:100%;height:34px;margin:14px 0 0;opacity:0.3;}
+
+/* LOG BUTTON */
+.log-btn{margin:16px 24px 0;padding:14px 18px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.log-btn:active{background:#1565C0;}
+.log-left{display:flex;align-items:center;gap:14px;}
+.log-icon{width:34px;height:34px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.log-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;}
+.log-sub{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;}
+.log-arrow{font-family:var(--mono);font-size:18px;color:rgba(255,255,255,0.7);}
+
+/* METRICS */
+.metrics-section{padding:18px 24px 0;}
+.sec-label{font-family:var(--mono);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.metrics-grid{display:flex;flex-direction:column;gap:10px;}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;display:flex;align-items:flex-start;justify-content:space-between;cursor:pointer;}
+.metric-card:active{background:var(--surface2);}
+.metric-card.s-optimal{border-left:3px solid var(--green);}
+.metric-card.s-elevated{border-left:3px solid var(--orange);}
+.metric-card.s-high{border-left:3px solid var(--red);}
+.metric-card.s-low{border-left:3px solid var(--purple);}
+.rbadge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;padding:3px 7px;border-radius:4px;margin-bottom:4px;}
+.rb-optimal{background:var(--gdim);color:var(--green);border:1px solid rgba(46,204,113,0.25);}
+.rb-elevated{background:rgba(255,152,0,0.12);color:var(--orange);border:1px solid rgba(255,152,0,0.25);}
+.rb-high{background:rgba(229,57,53,0.12);color:var(--red);border:1px solid rgba(229,57,53,0.25);}
+.rb-low{background:rgba(171,71,188,0.12);color:var(--purple);border:1px solid rgba(171,71,188,0.25);}
+.metric-val{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:-0.03em;line-height:1;margin-bottom:4px;word-break:break-all;}
+.metric-name{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);}
+.metric-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.sparkline{height:24px;width:70px;}
+.trend-lbl{font-family:var(--mono);font-size:11px;}
+.trend-up{color:var(--accent);} .trend-dn{color:var(--green);} .trend-st{color:var(--text3);}
+.avg-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;}
+.goal-lbl{font-family:var(--mono);font-size:10px;text-align:right;margin-top:2px;}
+.goal-on{color:var(--green);}
+.goal-off{color:var(--text3);}
+.goal-close{color:var(--orange);}
+
+/* BMI */
+.bmi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;cursor:pointer;margin-top:10px;}
+.bmi-card:active{background:var(--surface2);}
+.bmi-card.s-optimal{border-left:3px solid var(--green);}
+.bmi-card.s-elevated{border-left:3px solid var(--orange);}
+.bmi-card.s-high{border-left:3px solid var(--red);}
+.bmi-card.s-low{border-left:3px solid var(--purple);}
+.bmi-val-row{display:flex;align-items:baseline;gap:6px;margin:4px 0;}
+.bmi-num{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:-0.03em;}
+.bmi-unit{font-family:var(--mono);font-size:12px;color:var(--text3);}
+.bmi-name{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);}
+.bmi-bar-wrap{margin:12px 0 6px;position:relative;}
+.bmi-track{height:6px;border-radius:3px;background:linear-gradient(to right,#AB47BC 0%,#AB47BC 11.5%,#2ECC71 11.5%,#2ECC71 40%,#FF9800 40%,#FF9800 56.25%,#E53935 56.25%,#E53935 100%);}
+.bmi-marker{position:absolute;top:-4px;width:4px;height:14px;background:#fff;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 4px rgba(0,0,0,0.5);transition:left 0.4s;}
+.bmi-bar-labels{display:flex;justify-content:space-between;margin-top:5px;}
+.bmi-bar-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.bmi-note{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;}
+.bmi-source{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:6px;}
+.bmi-nodata{font-family:var(--mono);font-size:11px;color:var(--text3);padding:4px 0;}
+
+/* NAV CARDS */
+.nav-section{padding:18px 24px;}
+.nav-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.nav-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+.nav-card:active{background:var(--surface2);}
+.nav-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text2);text-align:center;}
+
+/* BOTTOM NAV */
+.bnav{border-top:1px solid var(--border);padding:10px 24px;padding-bottom:max(16px,env(safe-area-inset-bottom,16px));display:flex;justify-content:space-around;position:sticky;bottom:0;background:var(--bg);z-index:10;}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;opacity:0.4;padding:4px 12px;}
+.bnav-item.active{opacity:1;}
+.bnav-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text2);}
+
+/* SCREEN HEADER */
+.screen-hdr{display:flex;align-items:center;gap:14px;padding:18px 24px 14px;border-bottom:1px solid var(--border);}
+.back-btn{width:32px;height:32px;border-radius:6px;background:transparent;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.screen-title{font-size:17px;font-weight:700;letter-spacing:-0.01em;}
+
+/* HISTORY */
+.history-list{padding:18px 24px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+.hist-empty{padding:50px 24px;text-align:center;}
+.hist-empty-icon{font-size:28px;margin-bottom:10px;opacity:0.3;}
+.hist-empty-txt{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;line-height:1.8;}
+.hist-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
+.hist-date{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;}
+.hist-vals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.hist-val-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;}
+.hist-val-num{font-family:var(--mono);font-size:16px;font-weight:500;}
+.hist-val-unit{font-family:var(--mono);font-size:10px;color:var(--text3);}
+
+/* TRENDS */
+.trends-body{padding:18px 24px;display:flex;flex-direction:column;gap:18px;overflow-y:auto;}
+.trend-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.trend-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.trend-card-title{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.trend-card-val{font-family:var(--mono);font-size:24px;font-weight:500;}
+.trend-chg{font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:4px;}
+.tc-up{background:var(--adim);color:var(--accent);}
+.tc-dn{background:var(--gdim);color:var(--green);}
+.tc-flat{background:var(--surface2);color:var(--text3);}
+.chart-svg{width:100%;height:80px;}
+.chart-labels{display:flex;justify-content:space-between;margin-top:5px;}
+.chart-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);}
+
+/* PROFILE */
+.profile-body{padding:18px 24px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+.prof-avatar-row{display:flex;align-items:center;gap:14px;padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+.prof-avatar-big{width:52px;height:52px;border-radius:50%;background:var(--adim);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:17px;color:var(--accent);flex-shrink:0;}
+.prof-name{font-size:17px;font-weight:700;margin-bottom:2px;}
+.prof-user{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.settings-group-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;padding:0 4px;}
+.settings-group{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;}
+.settings-row:last-child{border-bottom:none;}
+.settings-row:active{background:var(--surface2);}
+.s-row-left{display:flex;align-items:center;gap:12px;}
+.s-row-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.s-row-lbl{font-size:14px;font-weight:600;}
+.s-row-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;}
+.s-row-right{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.toggle{width:38px;height:21px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle-knob{position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.2s;}
+.toggle.on .toggle-knob{transform:translateX(17px);}
+.logout-btn{display:block;width:100%;background:rgba(229,57,53,0.08);color:var(--red);border:1px solid rgba(229,57,53,0.2);border-radius:6px;padding:14px;font-family:var(--sans);font-size:14px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;}
+.logout-btn:active{background:rgba(229,57,53,0.18);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:24px 22px 40px;width:100%;max-width:480px;}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 22px;}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:3px;}
+.modal-sub{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text3);margin-bottom:22px;}
+.modal-fields{display:flex;flex-direction:column;gap:14px;margin-bottom:22px;}
+.modal-field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+.modal-field input{display:block;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:13px 15px;color:var(--text);font-family:var(--mono);font-size:22px;font-weight:500;outline:none;-webkit-appearance:none;appearance:none;}
+.modal-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,136,229,0.12);}
+.modal-field input::placeholder{color:var(--text3);font-size:16px;}
+.modal-hint{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;}
+.bp-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
+.bp-sep{font-family:var(--mono);font-size:22px;color:var(--text3);text-align:center;padding-top:22px;}
+.modal-actions{display:flex;gap:10px;}
+.modal-actions .btn-primary{flex:1;margin-bottom:0;}
+.modal-actions .btn-secondary{flex:0 0 auto;width:auto;padding:13px 18px;margin-bottom:0;}
+
+/* TOAST */
+.toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;padding:9px 18px;border-radius:20px;z-index:300;white-space:nowrap;}
+
+/* AI INSIGHT MODAL */
+.ai-modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:24px 22px 40px;width:100%;max-width:480px;}
+.ai-modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.ai-modal-title{display:flex;align-items:center;gap:10px;}
+.ai-badge{display:flex;align-items:center;gap:6px;background:var(--adim);border:1px solid rgba(30,136,229,0.25);border-radius:20px;padding:4px 12px;}
+.ai-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite;}
+.ai-badge-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);}
+.ai-close{background:none;border:1px solid var(--border);border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;}
+.ai-reading-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.ai-reading-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.ai-reading-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.ai-reading-val{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);}
+.ai-insight-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;min-height:80px;position:relative;}
+.ai-insight-text{font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--text);letter-spacing:0.02em;}
+.ai-loading{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.ai-loading-dots{display:flex;gap:5px;}
+.ai-loading-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:aiDotPulse 1.2s ease-in-out infinite;}
+.ai-loading-dot:nth-child(2){animation-delay:0.2s;}
+.ai-loading-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes aiDotPulse{0%,100%{opacity:0.3;transform:scale(0.8);}50%{opacity:1;transform:scale(1);}}
+.ai-loading-lbl{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;}
+.ai-footer{margin-top:14px;display:flex;align-items:center;justify-content:space-between;}
+.ai-disclaimer{font-family:var(--mono);font-size:9px;color:var(--text3);opacity:0.6;letter-spacing:0.06em;}
+.ai-done-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:10px 20px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;}
+.ai-done-btn:active{background:#1565C0;}
+
+/* DEMO SWITCHER */
+.demo-switcher{position:fixed;top:14px;right:14px;display:flex;gap:5px;z-index:50;}
+.dsw-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 10px;border-radius:4px;cursor:pointer;}
+.dsw-btn.active{border-color:var(--accent);color:var(--accent);background:var(--adim);}
+
+/* MOBILE */
+@media(max-width:390px){
+  #login,#register{padding:28px 16px;}
+  .status-section,.metrics-section,.nav-section,.history-list,.trends-body,.profile-body{padding-left:16px;padding-right:16px;}
+  .log-btn{margin-left:16px;margin-right:16px;}
+  .top-bar,.screen-hdr{padding-left:16px;padding-right:16px;}
+}
+@media(max-width:360px){
+  .bnav-lbl{font-size:8px;}
+  .bnav-item{padding:4px 8px;}
+  .bmi-bar-lbl:nth-child(2),.bmi-bar-lbl:nth-child(3){display:none;}
+}
+
+/* ONBOARDING */
+#onboarding{min-height:100vh;align-items:center;justify-content:center;padding:40px 24px;background:#0E1014;}
+.ob-card{width:100%;max-width:400px;}
+.ob-progress{display:flex;align-items:center;gap:6px;margin-bottom:32px;justify-content:center;}
+.ob-step{height:3px;flex:1;border-radius:2px;background:var(--border);transition:background 0.3s;}
+.ob-step.done{background:var(--accent);}
+.ob-step.active{background:var(--accent);opacity:0.5;}
+.ob-step-num{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:var(--text3);text-align:center;margin-bottom:8px;}
+.ob-icon{width:48px;height:48px;border-radius:12px;background:var(--adim);border:1px solid rgba(30,136,229,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.ob-headline{font-size:24px;font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:6px;}
+.ob-sub{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;margin-bottom:28px;line-height:1.6;}
+.ob-field{margin-bottom:20px;}
+.ob-field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+.ob-field input{display:block;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:15px 16px;color:var(--text);font-family:var(--mono);font-size:18px;font-weight:500;outline:none;-webkit-appearance:none;transition:border-color 0.15s;}
+.ob-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,136,229,0.1);}
+.ob-field input::placeholder{color:var(--text3);font-size:15px;}
+.ob-hint{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:5px;}
+.ob-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px;}
+.ob-skip{background:none;border:none;font-family:var(--mono);font-size:11px;color:var(--text3);text-align:center;cursor:pointer;padding:6px;letter-spacing:0.1em;text-decoration:underline;}
+.ob-goals-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+.ob-goal-row{display:flex;align-items:center;gap:12px;}
+.ob-goal-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);width:80px;flex-shrink:0;}
+.ob-goal-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-family:var(--mono);font-size:16px;font-weight:500;outline:none;-webkit-appearance:none;transition:border-color 0.15s;}
+.ob-goal-input:focus{border-color:var(--accent);}
+.ob-goal-unit{font-family:var(--mono);font-size:11px;color:var(--text3);width:36px;flex-shrink:0;}
+
+/* ── DASHBOARD V2 ── */
+.dash-body{padding:0 16px 100px;display:flex;flex-direction:column;gap:12px;}
+
+/* Risk Card */
+.risk-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:4px solid var(--border);
+  border-radius:12px;
+  padding:20px 20px 16px;
+  transition:border-color 0.4s ease, background 0.4s ease;
+  margin-top:8px;
+}
+.risk-card.risk-optimal{ border-left-color:var(--green); background:rgba(46,204,113,0.04); }
+.risk-card.risk-monitor { border-left-color:#F0B429; background:rgba(240,180,41,0.04); }
+.risk-card.risk-elevated{ border-left-color:var(--orange); background:rgba(230,126,34,0.05); }
+.risk-card.risk-high    { border-left-color:var(--red); background:rgba(229,57,53,0.05); }
+.risk-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.risk-card-title{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.risk-driver{font-size:13px;font-weight:600;color:var(--text);max-width:180px;line-height:1.4;}
+.risk-score-wrap{display:flex;align-items:baseline;gap:2px;flex-shrink:0;}
+.risk-score{font-family:Syne,sans-serif;font-size:52px;font-weight:800;line-height:1;letter-spacing:-0.03em;color:var(--text);transition:color 0.4s ease;}
+.risk-score-max{font-family:var(--mono);font-size:13px;color:var(--text3);margin-bottom:4px;}
+.risk-card-bottom{display:flex;align-items:center;justify-content:space-between;}
+.risk-status-pill{display:flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 12px;}
+.risk-status-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:background 0.4s;}
+.risk-status-lbl{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text);transition:color 0.4s;}
+.risk-direction{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.08em;}
+
+/* AI Strip */
+.ai-strip{
+  background:var(--adim);
+  border:1px solid rgba(30,136,229,0.2);
+  border-radius:8px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  animation:stripFade 0.5s ease;
+}
+@keyframes stripFade{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.ai-strip-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pulse 2s ease-in-out infinite;}
+.ai-strip-text{font-family:var(--mono);font-size:11px;color:var(--text);letter-spacing:0.04em;line-height:1.5;}
+
+/* Metric Cards V2 */
+.metrics-grid-v2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.metric-card-v2{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:3px solid transparent;
+  border-radius:10px;
+  padding:14px 14px 12px;
+  cursor:pointer;
+  transition:border-color 0.3s;
+}
+.metric-card-v2:active{background:var(--surface2);}
+.metric-card-v2.s-optimal{border-left-color:var(--green);}
+.metric-card-v2.s-elevated{border-left-color:var(--orange);}
+.metric-card-v2.s-high{border-left-color:var(--red);}
+.metric-card-v2.s-low{border-left-color:var(--purple);}
+.mcv2-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.mcv2-name{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text3);}
+.mcv2-val{font-family:Syne,sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.02em;color:var(--text);line-height:1.1;margin-bottom:5px;}
+.mcv2-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mcv2-unit{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.mcv2-trend{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.mcv2-trend.up{color:var(--orange);}
+.mcv2-trend.dn{color:var(--green);}
+.mcv2-avg{font-family:var(--mono);font-size:10px;color:var(--text3);margin-left:auto;}
+.mcv2-goal{font-family:var(--mono);font-size:10px;margin-top:5px;}
+.mcv2-goal.on{color:var(--green);}
+.mcv2-goal.close{color:var(--orange);}
+.mcv2-goal.off{color:var(--text3);}
+
+/* Log button V2 — quiet */
+.log-btn-v2{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:13px;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--text3);
+  cursor:pointer;
+  transition:border-color 0.15s, color 0.15s;
+  margin-top:4px;
+}
+.log-btn-v2:hover{border-color:var(--accent);color:var(--accent);}
+.log-btn-v2:active{background:var(--surface);}
+
+/* PRINT */
+.print-hdr{display:none;}
+@media print{
+  .demo-switcher,.bnav,.log-btn,.nav-section,.modal-overlay,.toast,
+  .top-bar .icon-btn,.back-btn,#register,#history,#trends,#profile,#login{display:none!important;}
+  #home{display:block!important;background:#fff!important;color:#000!important;}
+  body{background:#fff!important;}
+  .print-hdr{display:block!important;margin-bottom:16pt;}
+  .metric-card,.bmi-card{background:#fff!important;border:1px solid #ccc!important;border-left-width:3px!important;break-inside:avoid;margin-bottom:8pt;}
+  .bmi-track{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{margin:18mm 14mm;size:A4 portrait;}
+  body::after{content:"Hare Health · Generated " attr(data-print-date) " · Screening tool only";display:block;font-size:8pt;color:#999;text-align:center;margin-top:16pt;border-top:1px solid #eee;padding-top:6pt;}
+}
+</style>
+</head>
+<body>
+
+<!-- Demo Switcher -->
+<div class="demo-switcher">
+  <button class="dsw-btn active" onclick="showScreen('login')">Login</button>
+  <button class="dsw-btn" onclick="showScreen('home')">Dashboard</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     LOGIN
+══════════════════════════════════════ -->
+<div id="login" class="screen active">
+  <div class="auth-card">
+
+    <!-- LOGO BLOCK -->
+    <div class="logo-block">
+      <div class="logo-img-wrap" style="display:flex;align-items:center;gap:16px;">
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+    <rect x="37" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+    <polyline points="7,22 11,22 15,6 20,38 25,10 29,22 37,22" stroke="#1E88E5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <span style="font-family:Syne,sans-serif;font-size:22px;font-weight:700;letter-spacing:0.14em;color:#F0F2F5;text-transform:uppercase;white-space:nowrap;">HARE HEALTH</span>
+</div>
+      <h1 class="auth-headline">Cardiovascular<br>Intelligence.</h1>
+      <p class="auth-tagline">Measure. Monitor. Improve.</p>
+      <!-- ECG waveform — draws once on load -->
+      <svg class="login-ecg" viewBox="0 0 380 28" preserveAspectRatio="none">
+        <polyline
+          points="0,16 40,16 50,16 55,4 60,26 65,16 80,16 120,16 130,16 135,4 140,26 145,16 160,16 200,16 210,16 215,4 220,26 225,16 240,16 280,16 290,16 295,4 300,26 305,16 320,16 380,16"
+          fill="none" stroke="#1E88E5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="auth-divider"></div>
+
+    <!-- DEMO BOX -->
+    <div class="demo-box">
+      <div class="demo-lbl">Demo Credentials</div>
+      <div class="demo-row">
+        <div class="demo-creds">
+          <div class="demo-cred"><span>User</span>tester1</div>
+          <div class="demo-cred"><span>Pass</span>Perform2024!</div>
+        </div>
+        <button class="use-demo-btn" onclick="fillDemo()">Use Demo</button>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <div id="login-form-err"></div>
+    <div class="field-group">
+      <div class="field">
+        <label for="f-username">Username</label>
+        <input id="f-username" type="text" placeholder="tester1"
+          autocomplete="username" autocorrect="off" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="f-password">Password</label>
+        <input id="f-password" type="password" placeholder="••••••••••"
+          autocomplete="current-password">
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <button class="btn-primary" onclick="doLogin()">Log In</button>
+    <p class="auth-trust">Your data. Your control.</p>
+    <button class="btn-secondary" onclick="showScreen('register')">Create Account</button>
+
+    <div id="login-remembered"></div>
+
+    <!-- TRUST BADGES -->
+    <div class="auth-footer">
+      <div class="sec-badge"><span class="sec-dot"></span>Encrypted</div>
+      <div class="dot-sep"></div>
+      <div class="sec-badge">Private</div>
+      <div class="dot-sep"></div>
+      <div class="sec-badge">Secure</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     REGISTER
+══════════════════════════════════════ -->
+<div id="register" class="screen">
+  <div class="auth-card">
+    <div class="logo-row" style="display:flex;align-items:center;gap:16px;">
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+    <rect x="37" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+    <polyline points="7,22 11,22 15,6 20,38 25,10 29,22 37,22" stroke="#1E88E5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <span style="font-family:Syne,sans-serif;font-size:22px;font-weight:700;letter-spacing:0.14em;color:#F0F2F5;text-transform:uppercase;white-space:nowrap;">HARE HEALTH</span>
+</div>
+    <h1 class="auth-headline">Create Your<br>Account.</h1>
+    <p class="auth-tagline">Performance starts with a baseline.</p>
+    <div id="reg-form-err"></div>
+    <div class="field-group">
+      <div class="field">
+        <label for="r-name">Full Name</label>
+        <input id="r-name" type="text" placeholder="James Mitchell" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="r-user">Username</label>
+        <input id="r-user" type="text" placeholder="Choose a username" autocomplete="username" autocorrect="off" autocapitalize="none">
+      </div>
+      <div class="field">
+        <label for="r-pass">Password</label>
+        <input id="r-pass" type="password" placeholder="Min 8 characters" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label for="r-conf">Confirm Password</label>
+        <input id="r-conf" type="password" placeholder="Re-enter password" autocomplete="new-password">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="doRegister()">Create Account</button>
+    <button class="btn-secondary" onclick="showScreen('login')">Back to Login</button>
+    <div class="auth-footer">
+      <div class="sec-badge"><span class="sec-dot"></span>Encrypted</div>
+      <div class="dot-sep"></div>
+      <div class="sec-badge">Private</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ONBOARDING
+══════════════════════════════════════ -->
+<div id="onboarding" class="screen">
+  <div class="ob-card">
+
+    <!-- Progress bar -->
+    <div class="ob-step-num" id="ob-step-num">Step 1 of 4</div>
+    <div class="ob-progress">
+      <div class="ob-step active" id="ob-s1"></div>
+      <div class="ob-step" id="ob-s2"></div>
+      <div class="ob-step" id="ob-s3"></div>
+      <div class="ob-step" id="ob-s4"></div>
+    </div>
+
+    <!-- Step 1: About You -->
+    <div id="ob-step-1">
+      <div class="ob-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <h2 class="ob-headline">Let's set up<br>your profile.</h2>
+      <p class="ob-sub">A few details help us personalise<br>your cardiovascular analysis.</p>
+      <div class="ob-field">
+        <label>Age</label>
+        <input id="ob-age" type="number" inputmode="numeric" placeholder="45" min="18" max="120">
+        <p class="ob-hint">Used for age-adjusted benchmarks</p>
+      </div>
+      <div class="ob-actions">
+        <button class="btn-primary" onclick="obNext(1)">Continue →</button>
+        <button class="ob-skip" onclick="obSkip(1)">Skip for now</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Height -->
+    <div id="ob-step-2" style="display:none;">
+      <div class="ob-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M8 6l4-4 4 4"/><path d="M8 18l4 4 4-4"/></svg>
+      </div>
+      <h2 class="ob-headline">What's your<br>height?</h2>
+      <p class="ob-sub">Required to calculate your BMI<br>and healthy weight range.</p>
+      <div class="ob-field">
+        <label>Height</label>
+        <input id="ob-height" type="text" inputmode="text" placeholder="5'11&quot;">
+        <p class="ob-hint">e.g. 5'11" · 71in · 180cm</p>
+      </div>
+      <div class="ob-actions">
+        <button class="btn-primary" onclick="obNext(2)">Continue →</button>
+        <button class="ob-skip" onclick="obSkip(2)">Skip for now</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Goals -->
+    <div id="ob-step-3" style="display:none;">
+      <div class="ob-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      </div>
+      <h2 class="ob-headline">Set your<br>targets.</h2>
+      <p class="ob-sub">Optional goals tracked on your dashboard.<br>You can update these anytime.</p>
+      <div class="ob-goals-grid">
+        <div class="ob-goal-row">
+          <span class="ob-goal-lbl">Heart Rate</span>
+          <input class="ob-goal-input" id="ob-goal-hr" type="number" inputmode="numeric" placeholder="65">
+          <span class="ob-goal-unit">bpm</span>
+        </div>
+        <div class="ob-goal-row">
+          <span class="ob-goal-lbl">Blood Pres.</span>
+          <input class="ob-goal-input" id="ob-goal-bp" type="number" inputmode="numeric" placeholder="115">
+          <span class="ob-goal-unit">sys</span>
+        </div>
+        <div class="ob-goal-row">
+          <span class="ob-goal-lbl">Weight</span>
+          <input class="ob-goal-input" id="ob-goal-wt" type="number" inputmode="decimal" placeholder="180">
+          <span class="ob-goal-unit">lbs</span>
+        </div>
+      </div>
+      <div class="ob-actions">
+        <button class="btn-primary" onclick="obNext(3)">Continue →</button>
+        <button class="ob-skip" onclick="obSkip(3)">Skip for now</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Ready -->
+    <div id="ob-step-4" style="display:none;">
+      <div class="ob-icon" style="background:var(--gdim);border-color:rgba(46,204,113,0.2);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" stroke-width="2.5" stroke-linecap="round"><polyline points="20,6 9,17 4,12"/></svg>
+      </div>
+      <h2 class="ob-headline">You're all set,<br><span id="ob-welcome-name">ready</span>.</h2>
+      <p class="ob-sub">Your profile is configured. Log your first<br>reading to begin tracking performance.</p>
+      <div class="ob-actions">
+        <button class="btn-primary" onclick="obFinish()">Go to Dashboard →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     HOME / DASHBOARD
+══════════════════════════════════════ -->
+<div id="home" class="screen">
+
+  <!-- PRINT HEADER -->
+  <div class="print-hdr">
+    <div style="display:flex;align-items:center;margin-bottom:12pt;padding-bottom:8pt;border-bottom:2px solid #1E88E5;">
+      <strong style="font-size:14pt;letter-spacing:0.06em;color:#1E88E5;">HARE HEALTH</strong>
+      <span style="font-size:8pt;color:#666;margin-left:auto;" id="print-date-el"></span>
+    </div>
+    <div style="font-size:11pt;font-weight:700;" id="print-name-el"></div>
+    <div style="font-size:8pt;color:#666;margin-bottom:12pt;">Cardiovascular Performance Report</div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-logo" style="display:flex;align-items:center;gap:10px;">
+      <svg width="28" height="28" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+        <rect x="37" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+        <polyline points="7,22 11,22 15,6 20,38 25,10 29,22 37,22" stroke="#1E88E5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span style="font-family:Syne,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;color:#8B919C;text-transform:uppercase;white-space:nowrap;">HARE HEALTH</span>
+    </div>
+    <div class="top-right">
+      <div class="icon-btn" onclick="exportPDF()" title="Export PDF" style="border-color:rgba(30,136,229,0.3);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <div class="avatar" id="home-avatar" onclick="showScreen('profile')">HH</div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD BODY -->
+  <div class="dash-body">
+
+    <!-- 1. CARDIO RISK INDEX -->
+    <div class="risk-card" id="risk-card">
+      <div class="risk-card-top">
+        <div>
+          <div class="risk-card-title">CARDIO RISK INDEX</div>
+          <div class="risk-driver" id="risk-driver">No data yet</div>
+        </div>
+        <div class="risk-score-wrap">
+          <div class="risk-score" id="risk-score">—</div>
+          <div class="risk-score-max">/100</div>
+        </div>
+      </div>
+      <div class="risk-card-bottom">
+        <div class="risk-status-pill" id="risk-status-pill">
+          <span class="risk-status-dot" id="risk-status-dot"></span>
+          <span class="risk-status-lbl" id="risk-status-lbl">Awaiting Data</span>
+        </div>
+        <div class="risk-direction" id="risk-direction"></div>
+      </div>
+    </div>
+
+    <!-- 2. AI INSIGHT STRIP -->
+    <div class="ai-strip" id="ai-strip" style="display:none;">
+      <div class="ai-strip-dot" id="ai-strip-dot"></div>
+      <div class="ai-strip-text" id="ai-strip-text"></div>
+    </div>
+
+    <!-- 3. CORE METRIC CARDS -->
+    <div class="metrics-grid-v2">
+
+      <div class="metric-card-v2" id="card-hr" onclick="showScreen('trends')">
+        <div class="mcv2-top">
+          <span class="mcv2-name">Heart Rate</span>
+          <svg class="sparkline" id="spark-hr" viewBox="0 0 60 22" fill="none"></svg>
+        </div>
+        <div class="mcv2-val" id="val-hr">—</div>
+        <div class="mcv2-bottom">
+          <span class="mcv2-unit">bpm</span>
+          <span class="mcv2-trend" id="trend-hr">—</span>
+          <span class="mcv2-avg" id="avg-hr"></span>
+        </div>
+        <div class="mcv2-goal" id="goal-hr"></div>
+      </div>
+
+      <div class="metric-card-v2" id="card-bp" onclick="showScreen('trends')">
+        <div class="mcv2-top">
+          <span class="mcv2-name">Blood Pressure</span>
+          <svg class="sparkline" id="spark-bp" viewBox="0 0 60 22" fill="none"></svg>
+        </div>
+        <div class="mcv2-val" id="val-bp">—/—</div>
+        <div class="mcv2-bottom">
+          <span class="mcv2-unit">mmHg</span>
+          <span class="mcv2-trend" id="trend-bp">—</span>
+          <span class="mcv2-avg" id="avg-bp"></span>
+        </div>
+        <div class="mcv2-goal" id="goal-bp"></div>
+      </div>
+
+      <div class="metric-card-v2" id="card-wt" onclick="showScreen('trends')">
+        <div class="mcv2-top">
+          <span class="mcv2-name">Weight</span>
+          <svg class="sparkline" id="spark-wt" viewBox="0 0 60 22" fill="none"></svg>
+        </div>
+        <div class="mcv2-val" id="val-wt">—</div>
+        <div class="mcv2-bottom">
+          <span class="mcv2-unit">lbs</span>
+          <span class="mcv2-trend" id="trend-wt">—</span>
+          <span class="mcv2-avg" id="avg-wt"></span>
+        </div>
+        <div class="mcv2-goal" id="goal-wt"></div>
+      </div>
+
+      <div class="metric-card-v2" id="card-bmi" onclick="showScreen('trends')">
+        <div class="mcv2-top">
+          <span class="mcv2-name">BMI</span>
+        </div>
+        <div class="mcv2-val" id="bmi-num">—</div>
+        <div class="mcv2-bottom">
+          <span class="mcv2-unit">kg/m²</span>
+          <span class="mcv2-avg" id="bmi-detail" style="font-size:10px;"></span>
+        </div>
+        <div id="bmi-source" style="display:none;"></div>
+        <div id="rbadge-bmi" style="display:none;"></div>
+      </div>
+
+    </div>
+
+    <!-- hidden legacy elements still used by refreshBMI -->
+    <div id="rbadge-hr" style="display:none;"></div>
+    <div id="rbadge-bp" style="display:none;"></div>
+    <div id="rbadge-wt" style="display:none;"></div>
+    <div id="home-date" style="display:none;"></div>
+    <div id="home-greeting" style="display:none;"></div>
+    <div id="home-sub" style="display:none;"></div>
+    <div id="status-badge" style="display:none;"><span id="s-lbl"></span></div>
+
+    <!-- 4. LOG READING — lowest visual priority -->
+    <button class="log-btn-v2" onclick="openLogModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Log Reading
+    </button>
+
+  </div><!-- end dash-body -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="bnav-item active" onclick="showScreen('home')">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0F2F5" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span class="bnav-lbl">Home</span>
+    </div>
+    <div class="bnav-item" onclick="showScreen('history')">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+      <span class="bnav-lbl">History</span>
+    </div>
+    <div class="bnav-item" onclick="showScreen('trends')">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span class="bnav-lbl">Trends</span>
+    </div>
+    <div class="bnav-item" onclick="showScreen('profile')">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="bnav-lbl">Profile</span>
+    </div>
+  </div>
+
+</div>
+<!-- ══════════════════════════════════════
+     HISTORY
+══════════════════════════════════════ -->
+<div id="history" class="screen">
+  <div class="screen-hdr">
+    <div class="back-btn" onclick="showScreen('home')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+    </div>
+    <span class="screen-title">Reading History</span>
+  </div>
+  <div class="history-list" id="history-list"></div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="showScreen('home')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="bnav-lbl">Home</span></div>
+    <div class="bnav-item active" onclick="showScreen('history')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0F2F5" stroke-width="1.5" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg><span class="bnav-lbl">History</span></div>
+    <div class="bnav-item" onclick="showScreen('trends')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="bnav-lbl">Trends</span></div>
+    <div class="bnav-item" onclick="showScreen('profile')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span class="bnav-lbl">Profile</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TRENDS
+══════════════════════════════════════ -->
+<div id="trends" class="screen">
+  <div class="screen-hdr">
+    <div class="back-btn" onclick="showScreen('home')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+    </div>
+    <span class="screen-title">Trends</span>
+  </div>
+  <div class="trends-body">
+    <div class="trend-card">
+      <div class="trend-card-hdr">
+        <div><div class="trend-card-title">Heart Rate</div><div class="trend-card-val" id="tv-hr">— bpm</div></div>
+        <div class="trend-chg tc-flat" id="tc-hr">No data</div>
+      </div>
+      <svg class="chart-svg" id="ch-hr" viewBox="0 0 300 80" preserveAspectRatio="none"></svg>
+      <div class="chart-labels" id="cl-hr"></div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-card-hdr">
+        <div><div class="trend-card-title">Blood Pressure (Systolic)</div><div class="trend-card-val" id="tv-bp">—/— mmHg</div></div>
+        <div class="trend-chg tc-flat" id="tc-bp">No data</div>
+      </div>
+      <svg class="chart-svg" id="ch-bp" viewBox="0 0 300 80" preserveAspectRatio="none"></svg>
+      <div class="chart-labels" id="cl-bp"></div>
+    </div>
+    <div class="trend-card">
+      <div class="trend-card-hdr">
+        <div><div class="trend-card-title">Body Weight</div><div class="trend-card-val" id="tv-wt">— lbs</div></div>
+        <div class="trend-chg tc-flat" id="tc-wt">No data</div>
+      </div>
+      <svg class="chart-svg" id="ch-wt" viewBox="0 0 300 80" preserveAspectRatio="none"></svg>
+      <div class="chart-labels" id="cl-wt"></div>
+    </div>
+  </div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="showScreen('home')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="bnav-lbl">Home</span></div>
+    <div class="bnav-item" onclick="showScreen('history')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg><span class="bnav-lbl">History</span></div>
+    <div class="bnav-item active" onclick="showScreen('trends')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0F2F5" stroke-width="1.5" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="bnav-lbl">Trends</span></div>
+    <div class="bnav-item" onclick="showScreen('profile')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span class="bnav-lbl">Profile</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PROFILE
+══════════════════════════════════════ -->
+<div id="profile" class="screen">
+  <div class="screen-hdr">
+    <div class="back-btn" onclick="showScreen('home')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+    </div>
+    <span class="screen-title">Profile &amp; Settings</span>
+  </div>
+  <div class="profile-body">
+    <div class="prof-avatar-row">
+      <div class="prof-avatar-big" id="prof-avatar-big">HH</div>
+      <div>
+        <div class="prof-name" id="prof-name-el">Your Name</div>
+        <div class="prof-user" id="prof-user-el">—</div>
+      </div>
+    </div>
+    <div>
+      <p class="settings-group-lbl">Personal Info</p>
+      <div class="settings-group">
+        <div class="settings-row" onclick="editField('name')">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+            <div><div class="s-row-lbl">Full Name</div><div class="s-row-sub" id="disp-name">Not set</div></div>
+          </div>
+          <div class="s-row-right">Edit →</div>
+        </div>
+        <div class="settings-row" onclick="editField('age')">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div><div class="s-row-lbl">Age</div><div class="s-row-sub" id="disp-age">Not set</div></div>
+          </div>
+          <div class="s-row-right">Edit →</div>
+        </div>
+        <div class="settings-row" onclick="editField('height')">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M8 6l4-4 4 4"/><path d="M8 18l4 4 4-4"/></svg></div>
+            <div><div class="s-row-lbl">Height</div><div class="s-row-sub" id="disp-height">Not set</div></div>
+          </div>
+          <div class="s-row-right">Edit →</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="settings-group-lbl">Preferences</p>
+      <div class="settings-group">
+        <div class="settings-row">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--gdim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+            <div><div class="s-row-lbl">Daily Reminders</div><div class="s-row-sub">Remind me to log readings</div></div>
+          </div>
+          <div class="toggle" id="tog-reminders" onclick="togglePref('reminders')"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="settings-group-lbl">Data</p>
+      <div class="settings-group">
+        <div class="settings-row" onclick="showScreen('history')">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--surface2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="2" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
+            <div><div class="s-row-lbl">Reading History</div><div class="s-row-sub" id="disp-count">0 readings</div></div>
+          </div>
+          <div class="s-row-right">View →</div>
+        </div>
+        <div class="settings-row" onclick="clearData()">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:rgba(229,57,53,0.08)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
+            <div><div class="s-row-lbl" style="color:var(--red)">Clear All Data</div><div class="s-row-sub">Permanently delete readings</div></div>
+          </div>
+          <div class="s-row-right" style="color:var(--red)">Delete</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="settings-group-lbl">Performance Goals</p>
+      <div class="settings-group">
+        <div class="settings-row" onclick="editGoal('hr')">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
+            <div><div class="s-row-lbl">Heart Rate Goal</div><div class="s-row-sub" id="disp-goal-hr">Not set</div></div>
+          </div>
+          <div class="s-row-right">Edit →</div>
+        </div>
+        <div class="settings-row" onclick="editGoal('bp')">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 6v6l4 2"/></svg></div>
+            <div><div class="s-row-lbl">Blood Pressure Goal</div><div class="s-row-sub" id="disp-goal-bp">Not set</div></div>
+          </div>
+          <div class="s-row-right">Edit →</div>
+        </div>
+        <div class="settings-row" onclick="editGoal('wt')">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 1 3 3c0 1.5-1 2.8-2.4 3.4L20 21H4l7.4-12.6C10 7.8 9 6.5 9 5a3 3 0 0 1 3-3z"/></svg></div>
+            <div><div class="s-row-lbl">Weight Goal</div><div class="s-row-sub" id="disp-goal-wt">Not set</div></div>
+          </div>
+          <div class="s-row-right">Edit →</div>
+        </div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="showScreen('home')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="bnav-lbl">Home</span></div>
+    <div class="bnav-item" onclick="showScreen('history')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg><span class="bnav-lbl">History</span></div>
+    <div class="bnav-item" onclick="showScreen('trends')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B919C" stroke-width="1.5" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="bnav-lbl">Trends</span></div>
+    <div class="bnav-item active" onclick="showScreen('profile')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0F2F5" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span class="bnav-lbl">Profile</span></div>
+  </div>
+</div>
+
+<!-- LOG MODAL -->
+<div class="modal-overlay" id="log-modal" onclick="bgClose(event,'log-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <p class="modal-title">Log Reading</p>
+    <p class="modal-sub" id="log-modal-date">Today</p>
+    <div class="modal-fields">
+      <div class="modal-field">
+        <label for="in-hr">Heart Rate</label>
+        <input id="in-hr" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="72" min="30" max="220">
+        <p class="modal-hint">bpm — resting</p>
+      </div>
+      <div class="modal-field">
+        <label>Blood Pressure</label>
+        <div class="bp-row">
+          <div>
+            <input id="in-sys" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="118" min="60" max="250">
+            <p class="modal-hint">systolic</p>
+          </div>
+          <div class="bp-sep">/</div>
+          <div>
+            <input id="in-dia" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="76" min="40" max="150">
+            <p class="modal-hint">diastolic</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label for="in-wt">Weight (lbs)</label>
+        <input id="in-wt" type="number" inputmode="decimal" pattern="[0-9.]*" placeholder="185.0" min="50" max="700" step="0.1">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('log-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveReading()">Save Reading</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="bgClose(event,'edit-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <p class="modal-title" id="edit-title">Edit</p>
+    <p class="modal-sub" id="edit-sub">Update your info</p>
+    <div class="modal-fields">
+      <div class="modal-field">
+        <label id="edit-lbl">Value</label>
+        <input id="edit-input" type="text" style="font-size:18px;">
+        <p class="modal-hint" id="edit-hint"></p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveEdit()">✓ Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI INSIGHT MODAL -->
+<div class="modal-overlay" id="ai-modal" onclick="bgClose(event,'ai-modal')">
+  <div class="ai-modal">
+    <div class="modal-handle"></div>
+    <div class="ai-modal-hdr">
+      <div class="ai-modal-title">
+        <div class="ai-badge"><span class="ai-badge-dot"></span><span class="ai-badge-lbl">AI Analysis</span></div>
+      </div>
+      <button class="ai-close" onclick="closeModal('ai-modal')">✕</button>
+    </div>
+    <div class="ai-reading-summary" id="ai-reading-summary"></div>
+    <div class="ai-insight-box">
+      <div class="ai-loading" id="ai-loading">
+        <div class="ai-loading-dots">
+          <div class="ai-loading-dot"></div>
+          <div class="ai-loading-dot"></div>
+          <div class="ai-loading-dot"></div>
+        </div>
+        <span class="ai-loading-lbl">Analyzing your readings...</span>
+      </div>
+      <div class="ai-insight-text" id="ai-insight-text" style="display:none;"></div>
+    </div>
+    <div class="ai-footer">
+      <span class="ai-disclaimer">Screening tool only · Not medical advice</span>
+      <button class="ai-done-btn" onclick="closeModal('ai-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────
+var KEYS = { users:'hh2_users', readings:'hh2_readings', prefs:'hh2_prefs', session:'hh2_session', lastuser:'hh2_lastuser' };
+
+function ls_set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function ls_get(k,def){ try{ var v=localStorage.getItem(k); return v!==null ? JSON.parse(v) : def; }catch(e){ return def; } }
+
+// ─────────────────────────────────────
+// USERS
+// ─────────────────────────────────────
+function getUsers(){
+  var u = ls_get(KEYS.users, []);
+  if(!u.length){
+    u = [{ username:'tester1', password:'Perform2024!', name:'James Mitchell' }];
+    ls_set(KEYS.users, u);
+  }
+  return u;
+}
+
+var currentUser = null;
+
+// ─────────────────────────────────────
+// SESSION
+// ─────────────────────────────────────
+function getSession(){ return ls_get(KEYS.session, null); }
+function setSession(u){ ls_set(KEYS.session, u); }
+function clearSession(){ ls_set(KEYS.session, null); }
+
+// ─────────────────────────────────────
+// READINGS
+// ─────────────────────────────────────
+function getReadings(){ return ls_get(KEYS.readings, []); }
+function saveReadings(r){ ls_set(KEYS.readings, r); }
+
+// ─────────────────────────────────────
+// PREFS
+// ─────────────────────────────────────
+function getPrefs(){ return ls_get(KEYS.prefs, { name:'', age:'', height:'', reminders:false }); }
+function savePrefs(p){ ls_set(KEYS.prefs, p); }
+
+// ─────────────────────────────────────
+// SCREEN NAVIGATION
+// ─────────────────────────────────────
+function showScreen(id){
+  var screens = document.querySelectorAll('.screen');
+  for(var i=0; i<screens.length; i++) screens[i].classList.remove('active');
+  document.getElementById(id).classList.add('active');
+
+  // demo switcher highlight
+  var btns = document.querySelectorAll('.dsw-btn');
+  for(var j=0; j<btns.length; j++) btns[j].classList.remove('active');
+  var map = { login:'Login', home:'Dashboard' };
+  for(var k=0; k<btns.length; k++){
+    if(btns[k].textContent === map[id]) btns[k].classList.add('active');
+  }
+
+  if(id === 'login')   initLogin();
+  if(id === 'home')    refreshHome();
+  if(id === 'history') refreshHistory();
+  if(id === 'trends')  refreshTrends();
+  if(id === 'profile') refreshProfile();
+}
+
+// ─────────────────────────────────────
+// LOGIN SCREEN INIT
+// ─────────────────────────────────────
+function initLogin(){
+  var lastUser = ls_get(KEYS.lastuser, '');
+  var uEl = document.getElementById('f-username');
+  var remRow = document.getElementById('login-remembered');
+  var errEl = document.getElementById('login-form-err');
+  if(errEl) errEl.innerHTML = '';
+  if(uEl) uEl.style.borderColor = '';
+  var pEl = document.getElementById('f-password');
+  if(pEl){ pEl.value = ''; pEl.style.borderColor = ''; }
+
+  if(lastUser && uEl){
+    uEl.value = lastUser;
+    if(remRow) remRow.innerHTML = '<div class="remembered"><span class="remembered-lbl">&#9679; Session remembered</span><button class="forget-btn" onclick="forgetUser()">Forget</button></div>';
+    setTimeout(function(){ if(pEl) pEl.focus(); }, 60);
+  } else {
+    if(uEl) uEl.value = '';
+    if(remRow) remRow.innerHTML = '';
+  }
+}
+
+function forgetUser(){
+  ls_set(KEYS.lastuser, '');
+  var uEl = document.getElementById('f-username');
+  var remRow = document.getElementById('login-remembered');
+  if(uEl){ uEl.value = ''; uEl.focus(); }
+  if(remRow) remRow.innerHTML = '';
+}
+
+// ─────────────────────────────────────
+// AUTH ACTIONS
+// ─────────────────────────────────────
+function fillDemo(){
+  var uEl = document.getElementById('f-username');
+  var pEl = document.getElementById('f-password');
+  var eEl = document.getElementById('login-form-err');
+  if(uEl) uEl.value = 'tester1';
+  if(pEl) pEl.value = 'Perform2024!';
+  if(eEl) eEl.innerHTML = '';
+  if(uEl) uEl.style.borderColor = '';
+  if(pEl){ pEl.style.borderColor = ''; pEl.focus(); }
+}
+
+function doLogin(){
+  var uEl = document.getElementById('f-username');
+  var pEl = document.getElementById('f-password');
+  var eEl = document.getElementById('login-form-err');
+
+  if(!uEl || !pEl) return;
+
+  var username = uEl.value.trim();
+  var password = pEl.value;
+
+  if(eEl) eEl.innerHTML = '';
+  uEl.style.borderColor = '';
+  pEl.style.borderColor = '';
+
+  if(!username){
+    uEl.style.borderColor = '#E53935';
+    uEl.focus();
+    return;
+  }
+  if(!password){
+    pEl.style.borderColor = '#E53935';
+    pEl.focus();
+    return;
+  }
+
+  var users = getUsers();
+  var match = null;
+  for(var i=0; i<users.length; i++){
+    if(users[i].username === username && users[i].password === password){
+      match = users[i];
+      break;
+    }
+  }
+
+  if(!match){
+    if(eEl) eEl.innerHTML = '<p class="form-err">Invalid username or password</p>';
+    pEl.value = '';
+    pEl.focus();
+    return;
+  }
+
+  currentUser = match;
+  ls_set(KEYS.lastuser, username);
+  setSession(username);
+
+  var prefs = getPrefs();
+  if(!prefs.name && match.name){ prefs.name = match.name; savePrefs(prefs); }
+
+  showScreen('home');
+}
+
+function doRegister(){
+  var nameEl = document.getElementById('r-name');
+  var userEl = document.getElementById('r-user');
+  var passEl = document.getElementById('r-pass');
+  var confEl = document.getElementById('r-conf');
+  var errEl  = document.getElementById('reg-form-err');
+
+  var name = nameEl.value.trim();
+  var user = userEl.value.trim();
+  var pass = passEl.value;
+  var conf = confEl.value;
+
+  if(errEl) errEl.innerHTML = '';
+
+  if(!name){ nameEl.focus(); return; }
+  if(!user || user.length < 3){
+    if(errEl) errEl.innerHTML = '<p class="form-err">Username must be at least 3 characters</p>';
+    userEl.focus(); return;
+  }
+  if(!pass || pass.length < 8){
+    if(errEl) errEl.innerHTML = '<p class="form-err">Password must be at least 8 characters</p>';
+    passEl.focus(); return;
+  }
+  if(pass !== conf){
+    if(errEl) errEl.innerHTML = '<p class="form-err">Passwords do not match</p>';
+    confEl.focus(); return;
+  }
+
+  var users = getUsers();
+  for(var i=0; i<users.length; i++){
+    if(users[i].username === user){
+      if(errEl) errEl.innerHTML = '<p class="form-err">Username already taken</p>';
+      userEl.focus(); return;
+    }
+  }
+
+  var newUser = { username:user, password:pass, name:name };
+  users.push(newUser);
+  ls_set(KEYS.users, users);
+
+  currentUser = newUser;
+  ls_set(KEYS.lastuser, user);
+  setSession(user);
+
+  var prefs = getPrefs();
+  prefs.name = name;
+  savePrefs(prefs);
+
+  showScreen('onboarding');
+  obInit();
+}
+
+// ─────────────────────────────────────
+// ONBOARDING
+// ─────────────────────────────────────
+var obCurrentStep = 1;
+
+function obInit(){
+  obCurrentStep = 1;
+  obShowStep(1);
+}
+
+function obShowStep(n){
+  obCurrentStep = n;
+  for(var i=1; i<=4; i++){
+    var stepEl = document.getElementById('ob-step-'+i);
+    if(stepEl) stepEl.style.display = (i===n) ? 'block' : 'none';
+    var barEl = document.getElementById('ob-s'+i);
+    if(barEl){
+      barEl.className = 'ob-step' + (i < n ? ' done' : i === n ? ' active' : '');
+    }
+  }
+  document.getElementById('ob-step-num').textContent = 'Step ' + n + ' of 4';
+  if(n === 4){
+    var prefs = getPrefs();
+    var firstName = (prefs.name || '').split(' ')[0] || 'ready';
+    document.getElementById('ob-welcome-name').textContent = firstName;
+  }
+}
+
+function obNext(step){
+  var prefs = getPrefs();
+  if(step === 1){
+    var age = document.getElementById('ob-age').value.trim();
+    if(age){ prefs.age = age; savePrefs(prefs); }
+  } else if(step === 2){
+    var height = document.getElementById('ob-height').value.trim();
+    if(height){ prefs.height = height; savePrefs(prefs); }
+  } else if(step === 3){
+    var hr = document.getElementById('ob-goal-hr').value.trim();
+    var bp = document.getElementById('ob-goal-bp').value.trim();
+    var wt = document.getElementById('ob-goal-wt').value.trim();
+    if(hr) prefs.goal_hr = hr;
+    if(bp) prefs.goal_bp = bp;
+    if(wt) prefs.goal_wt = wt;
+    savePrefs(prefs);
+  }
+  obShowStep(step + 1);
+}
+
+function obSkip(step){
+  obShowStep(step + 1);
+}
+
+function obFinish(){
+  ls_set('hh2_onboarded', true);
+  showScreen('home');
+}
+
+function doLogout(){
+  clearSession();
+  currentUser = null;
+  showScreen('login');
+}
+
+// ─────────────────────────────────────
+// HOME
+// ─────────────────────────────────────
+function refreshHome(){
+  var prefs    = getPrefs();
+  var readings = getReadings();
+
+  // Avatar initials
+  var initials = 'HH';
+  if(prefs.name){
+    var pts = prefs.name.split(' ');
+    initials = pts.map(function(p){ return p[0]||''; }).join('').slice(0,2).toUpperCase();
+  }
+  document.getElementById('home-avatar').textContent = initials;
+
+  // ── NO DATA STATE ──
+  if(!readings.length){
+    setRiskCard(null);
+    document.getElementById('ai-strip').style.display = 'none';
+    ['val-hr','val-bp','val-wt'].forEach(function(id){
+      document.getElementById(id).textContent = '—';
+    });
+    document.getElementById('bmi-num').textContent = '—';
+    refreshBMI(null, prefs);
+    return;
+  }
+
+  var last   = readings[readings.length - 1];
+  var recent = readings.slice(-7);
+  var all30  = readings.slice(-30);
+
+  // ── VALUES ──
+  if(last.hr)  document.getElementById('val-hr').textContent = last.hr;
+  if(last.sys) document.getElementById('val-bp').textContent = last.sys + '/' + (last.dia||'—');
+  if(last.wt)  document.getElementById('val-wt').textContent = parseFloat(last.wt).toFixed(1);
+
+  // ── 7-DAY AVERAGES ──
+  function avg(arr, key){
+    var vals = arr.filter(function(r){ return r[key]; }).map(function(r){ return parseFloat(r[key]); });
+    if(!vals.length) return null;
+    return (vals.reduce(function(a,b){ return a+b; },0)/vals.length);
+  }
+  var aHR  = avg(recent,'hr');
+  var aSYS = avg(recent,'sys');
+  var aWT  = avg(recent,'wt');
+  if(aHR)  document.getElementById('avg-hr').textContent = aHR.toFixed(0) + ' avg';
+  if(aSYS) document.getElementById('avg-bp').textContent = aSYS.toFixed(0) + ' avg';
+  if(aWT)  document.getElementById('avg-wt').textContent = aWT.toFixed(1) + ' avg';
+
+  // ── TREND ARROWS ──
+  function setTrendV2(arr, key, elId, lowerGood){
+    var vals = arr.filter(function(r){ return r[key]; }).map(function(r){ return parseFloat(r[key]); });
+    var el   = document.getElementById(elId);
+    if(vals.length < 2){ el.textContent = '—'; el.className = 'mcv2-trend'; return; }
+    var diff = vals[vals.length-1] - vals[0];
+    if(Math.abs(diff) < 0.5){ el.textContent = '→'; el.className = 'mcv2-trend'; }
+    else if(diff > 0){
+      el.textContent = '↑ +' + Math.abs(diff).toFixed(1);
+      el.className = 'mcv2-trend ' + (lowerGood ? 'up' : 'dn');
+    } else {
+      el.textContent = '↓ ' + Math.abs(diff).toFixed(1);
+      el.className = 'mcv2-trend ' + (lowerGood ? 'dn' : 'up');
+    }
+  }
+  setTrendV2(recent,'hr','trend-hr',true);
+  setTrendV2(recent,'sys','trend-bp',true);
+  setTrendV2(recent,'wt','trend-wt',true);
+
+  // ── SPARKLINES ──
+  function drawSpark(svgId, data, key, color){
+    var el = document.getElementById(svgId);
+    el.innerHTML = '';
+    var vals = data.slice(-8).filter(function(r){ return r[key]; }).map(function(r){ return parseFloat(r[key]); });
+    if(vals.length < 2) return;
+    var mn = Math.min.apply(null,vals), mx = Math.max.apply(null,vals), rng = mx-mn||1;
+    var pts = vals.map(function(v,i){
+      return ((i/(vals.length-1))*58+1)+','+(20-((v-mn)/rng)*18+1);
+    }).join(' ');
+    var pl = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    pl.setAttribute('points',pts);
+    pl.setAttribute('fill','none');
+    pl.setAttribute('stroke',color);
+    pl.setAttribute('stroke-width','1.5');
+    pl.setAttribute('stroke-linecap','round');
+    el.appendChild(pl);
+  }
+  drawSpark('spark-hr', readings,'hr','#1E88E5');
+  drawSpark('spark-bp', readings,'sys','#1E88E5');
+  drawSpark('spark-wt', readings,'wt','#2ECC71');
+
+  // ── CARD STATUS BORDERS ──
+  function setCardStatus(cardId, status){
+    var card = document.getElementById(cardId);
+    card.className = 'metric-card-v2' + (status ? ' s-'+status : '');
+  }
+  var hrStatus = '', bpStatus = '';
+  if(last.hr){
+    var hr = parseFloat(last.hr);
+    if(hr < 50) hrStatus='low';
+    else if(hr <= 90) hrStatus='optimal';
+    else if(hr <= 100) hrStatus='elevated';
+    else hrStatus='high';
+    setCardStatus('card-hr', hrStatus);
+  }
+  if(last.sys){
+    var sys = parseFloat(last.sys);
+    if(sys < 90) bpStatus='low';
+    else if(sys <= 120) bpStatus='optimal';
+    else if(sys <= 129) bpStatus='elevated';
+    else if(sys <= 139) bpStatus='high';
+    else bpStatus='high';
+    setCardStatus('card-bp', bpStatus);
+  }
+
+  // ── GOAL LABELS ──
+  function setGoalV2(elId, current, goalVal){
+    var el = document.getElementById(elId);
+    if(!goalVal || !current){ el.textContent=''; el.className='mcv2-goal'; return; }
+    var cur = parseFloat(current), goal = parseFloat(goalVal);
+    var diff = Math.round((cur-goal)*10)/10;
+    if(Math.abs(diff) <= 2){
+      el.textContent = '✓ On target'; el.className = 'mcv2-goal on';
+    } else if(Math.abs(diff) <= 8){
+      el.textContent = (diff>0?'↓ ':'↑ ')+Math.abs(diff)+' to goal'; el.className = 'mcv2-goal close';
+    } else {
+      el.textContent = (diff>0?'↓ ':'↑ ')+Math.abs(diff)+' to goal'; el.className = 'mcv2-goal off';
+    }
+  }
+  setGoalV2('goal-hr', last.hr,  prefs.goal_hr);
+  setGoalV2('goal-bp', last.sys, prefs.goal_bp);
+  setGoalV2('goal-wt', last.wt,  prefs.goal_wt);
+
+  // ── RISK INDEX ──
+  refreshBMI(last, prefs);
+  setTimeout(function(){ setRiskCard(last, recent, all30, prefs, hrStatus, bpStatus); }, 50);
+}
+
+// ── RISK SCORING ENGINE ──
+var _lastRiskScore = null;
+
+function setRiskCard(last, recent, all30, prefs, hrStatus, bpStatus){
+  var scoreEl  = document.getElementById('risk-score');
+  var driverEl = document.getElementById('risk-driver');
+  var pillEl   = document.getElementById('risk-status-pill');
+  var dotEl    = document.getElementById('risk-status-dot');
+  var lblEl    = document.getElementById('risk-status-lbl');
+  var dirEl    = document.getElementById('risk-direction');
+  var card     = document.getElementById('risk-card');
+
+  if(!last){ 
+    scoreEl.textContent = '—';
+    driverEl.textContent = 'Log a reading to calculate';
+    card.className = 'risk-card';
+    return;
+  }
+
+  // BP score (40%)
+  var bpScore = 0, bpDriver = '';
+  if(last.sys){
+    var sys = parseFloat(last.sys);
+    if(sys <= 120)      { bpScore = 5;  bpDriver = 'BP optimal'; }
+    else if(sys <= 129) { bpScore = 35; bpDriver = 'BP slightly elevated'; }
+    else if(sys <= 139) { bpScore = 60; bpDriver = 'BP Stage 1 hypertension'; }
+    else                { bpScore = 85; bpDriver = 'BP Stage 2 hypertension'; }
+  }
+
+  // HR score (25%)
+  var hrScore = 0, hrDriver = '';
+  if(last.hr){
+    var hr = parseFloat(last.hr);
+    if(hr >= 50 && hr <= 70)       { hrScore = 5;  hrDriver = 'HR athletic range'; }
+    else if(hr <= 90)              { hrScore = 15; hrDriver = 'HR normal'; }
+    else if(hr <= 100)             { hrScore = 45; hrDriver = 'HR elevated'; }
+    else                           { hrScore = 80; hrDriver = 'HR tachycardia'; }
+  }
+
+  // BMI score (20%) — read from rendered bmi-num
+  var bmiScore = 0, bmiDriver = '';
+  var bmiVal = parseFloat(document.getElementById('bmi-num').textContent);
+  if(!isNaN(bmiVal)){
+    if(bmiVal < 18.5)            { bmiScore = 40; bmiDriver = 'BMI underweight'; }
+    else if(bmiVal <= 24.9)      { bmiScore = 5;  bmiDriver = 'BMI healthy'; }
+    else if(bmiVal <= 29.9)      { bmiScore = 35; bmiDriver = 'BMI overweight'; }
+    else                         { bmiScore = 65; bmiDriver = 'BMI obese'; }
+  }
+
+  // Weight trend score (15%)
+  var wtScore = 0;
+  if(all30 && all30.length >= 3){
+    var wtVals = all30.filter(function(r){ return r.wt; }).map(function(r){ return parseFloat(r.wt); });
+    if(wtVals.length >= 2){
+      var wtDiff = wtVals[wtVals.length-1] - wtVals[0];
+      if(Math.abs(wtDiff) < 2)     wtScore = 10;
+      else if(wtDiff > 5)          wtScore = 50;
+      else if(wtDiff < -5)         wtScore = 15;
+      else                         wtScore = 25;
+    }
+  }
+
+  // Weighted total
+  var total = Math.round(
+    bpScore * 0.40 +
+    hrScore * 0.25 +
+    bmiScore * 0.20 +
+    wtScore * 0.15
+  );
+  total = Math.max(1, Math.min(99, total));
+
+  // Primary driver
+  var drivers = [
+    { score: bpScore * 0.40,  label: bpDriver  },
+    { score: hrScore * 0.25,  label: hrDriver  },
+    { score: bmiScore * 0.20, label: bmiDriver }
+  ].filter(function(d){ return d.label; })
+   .sort(function(a,b){ return b.score - a.score; });
+  driverEl.textContent = drivers.length ? drivers[0].label : 'All metrics normal';
+
+  // Status label
+  var statusKey, statusLabel, dotColor;
+  if(total <= 20)      { statusKey='optimal';  statusLabel='Optimal';  dotColor='var(--green)'; }
+  else if(total <= 40) { statusKey='monitor';  statusLabel='Monitor';  dotColor='#F0B429'; }
+  else if(total <= 65) { statusKey='elevated'; statusLabel='Elevated'; dotColor='var(--orange)'; }
+  else                 { statusKey='high';     statusLabel='High Risk'; dotColor='var(--red)'; }
+
+  lblEl.textContent = statusLabel;
+  dotEl.style.background = dotColor;
+  card.className = 'risk-card risk-' + statusKey;
+
+  // 7-day direction
+  if(recent && recent.length >= 4){
+    var oldScore = calcPartialScore(recent.slice(0, Math.floor(recent.length/2)));
+    var newScore = calcPartialScore(recent.slice(Math.floor(recent.length/2)));
+    if(newScore < oldScore - 3)       dirEl.textContent = '↓ Improving 7d';
+    else if(newScore > oldScore + 3)  dirEl.textContent = '↑ Worsening 7d';
+    else                              dirEl.textContent = '→ Stable 7d';
+    dirEl.style.color = newScore < oldScore ? 'var(--green)' : newScore > oldScore ? 'var(--orange)' : 'var(--text3)';
+  }
+
+  // Animate score counter
+  animateScore(scoreEl, _lastRiskScore === null ? total : _lastRiskScore, total);
+  _lastRiskScore = total;
+
+  // AI Strip — quick one-liner
+  refreshAIStrip(last, recent, total, statusLabel, driverEl.textContent);
+}
+
+function calcPartialScore(arr){
+  function avg(a,k){ var v=a.filter(function(r){return r[k];}).map(function(r){return parseFloat(r[k]);}); return v.length?(v.reduce(function(a,b){return a+b;},0)/v.length):null; }
+  var s=avg(arr,'sys'), h=avg(arr,'hr');
+  var bp=s?(s<=120?5:s<=129?35:s<=139?60:85):50;
+  var hr=h?(h<=70?5:h<=90?15:h<=100?45:80):50;
+  return bp*0.5 + hr*0.5;
+}
+
+function animateScore(el, from, to){
+  var start = null, dur = 400;
+  from = from || to;
+  function step(ts){
+    if(!start) start=ts;
+    var p = Math.min((ts-start)/dur,1);
+    var ease = p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    el.textContent = Math.round(from+(to-from)*ease);
+    if(p<1) requestAnimationFrame(step);
+    else el.textContent = to;
+  }
+  requestAnimationFrame(step);
+}
+
+// AI Strip — live one-liner generated from latest data
+var _aiStripTimeout = null;
+function refreshAIStrip(last, recent, score, statusLabel, driver){
+  var strip    = document.getElementById('ai-strip');
+  var stripTxt = document.getElementById('ai-strip-text');
+
+  // Build a crisp one-liner without an API call first (instant)
+  var lines = [];
+  if(last.sys){
+    var sys = parseFloat(last.sys);
+    var avgSys = recent.filter(function(r){return r.sys;}).map(function(r){return parseFloat(r.sys);});
+    if(avgSys.length > 1){
+      var mean = avgSys.reduce(function(a,b){return a+b;},0)/avgSys.length;
+      var pct  = Math.round(Math.abs(sys-mean)/mean*100);
+      if(pct > 5) lines.push('Blood pressure is ' + pct + '% ' + (sys>mean?'above':'below') + ' your 7-day baseline.');
+    }
+  }
+  if(last.hr){
+    var hr = parseFloat(last.hr);
+    var hrVals = recent.filter(function(r){return r.hr;}).map(function(r){return parseFloat(r.hr);});
+    if(hrVals.length >= 3){
+      var diff = hrVals[hrVals.length-1] - hrVals[0];
+      if(diff < -3) lines.push('Resting heart rate improving steadily.');
+      else if(diff > 3) lines.push('Heart rate trending upward — monitor closely.');
+    }
+  }
+  if(!lines.length) lines.push('Risk Index: ' + statusLabel + '. Primary driver: ' + driver + '.');
+
+  strip.style.display = 'flex';
+  // Fade transition
+  strip.style.opacity = '0';
+  setTimeout(function(){
+    stripTxt.textContent = lines[0];
+    strip.style.transition = 'opacity 0.4s ease';
+    strip.style.opacity = '1';
+  }, 100);
+}
+
+function refreshBMI(last, prefs){
+  var card    = document.getElementById('card-bmi');
+  var numEl   = document.getElementById('bmi-num');
+  var detail  = document.getElementById('bmi-detail');
+  var sourceEl= document.getElementById('bmi-source');
+  var badgeEl = document.getElementById('rbadge-bmi');
+  card.className = 'bmi-card';
+  badgeEl.innerHTML = '';
+  sourceEl.textContent = '';
+
+  if(!last || !last.wt){
+    numEl.textContent = '—';
+    detail.innerHTML = '<div class="bmi-nodata">Log your weight to calculate BMI</div>';
+    return;
+  }
+
+  function parseHeightToInches(s){
+    if(!s) return null;
+    s = s.toString().trim().toLowerCase().replace(/\s/g,'');
+    var cmMatch = s.match(/([0-9.]+)cm/);
+    if(cmMatch) return parseFloat(cmMatch[1]) / 2.54;
+    var mMatch = s.match(/^([0-9.]+)m$/);
+    if(mMatch) return parseFloat(mMatch[1]) * 39.3701;
+    var ftIn = s.match(/([0-9]+)['\u2019]([0-9]+)/);
+    if(ftIn) return parseInt(ftIn[1])*12 + parseInt(ftIn[2]);
+    var justIn = parseFloat(s);
+    if(!isNaN(justIn) && justIn >= 48 && justIn <= 96) return justIn;
+    return null;
+  }
+
+  var hIn = parseHeightToInches(prefs.height);
+  if(!hIn){
+    numEl.textContent = '—';
+    detail.innerHTML = '<div class="bmi-nodata">Set height in Profile → Personal Info</div>';
+    return;
+  }
+
+  var wt  = parseFloat(last.wt);
+  var bmi = Math.round((wt * 703) / (hIn * hIn) * 10) / 10;
+  numEl.textContent = bmi.toFixed(1);
+
+  var status, label;
+  if(bmi < 18.5)      { status='low';      label='Underweight'; }
+  else if(bmi < 25)   { status='optimal';  label='Healthy Weight'; }
+  else if(bmi < 30)   { status='elevated'; label='Overweight'; }
+  else if(bmi < 35)   { status='high';     label='Obese (Class I)'; }
+  else if(bmi < 40)   { status='high';     label='Obese (Class II)'; }
+  else                { status='high';     label='Obese (Class III)'; }
+
+  var dots = { low:'▼', optimal:'●', elevated:'▲', high:'▲' };
+  badgeEl.innerHTML = '<span class="rbadge rb-'+status+'">'+dots[status]+' '+label+'</span>';
+  card.classList.add('s-' + status);
+
+  var minW = Math.ceil((18.5 * hIn * hIn) / 703);
+  var maxW = Math.floor((24.9 * hIn * hIn) / 703);
+  var note = (bmi >= 18.5 && bmi < 25) ? 'Within healthy weight range' : 'Healthy range for your height: ' + minW + '–' + maxW + ' lbs';
+
+  function pct(b){ return Math.min(100, Math.max(0, ((b - 10) / 35) * 100)); }
+  detail.innerHTML =
+    '<div class="bmi-bar-wrap">'+
+      '<div class="bmi-track"><div class="bmi-marker" style="left:'+pct(bmi)+'%"></div></div>'+
+      '<div class="bmi-bar-labels">'+
+        '<span class="bmi-bar-lbl">Underweight</span>'+
+        '<span class="bmi-bar-lbl">Healthy</span>'+
+        '<span class="bmi-bar-lbl">Overweight</span>'+
+        '<span class="bmi-bar-lbl">Obese</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="bmi-note">'+note+'</div>';
+
+  sourceEl.textContent = 'CDC / NIH-NHLBI Adult BMI Classification · Screening tool only';
+}
+
+// ─────────────────────────────────────
+// HISTORY
+// ─────────────────────────────────────
+function refreshHistory(){
+  var readings = getReadings();
+  var list = document.getElementById('history-list');
+  list.innerHTML = '';
+  if(!readings.length){
+    list.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">&#128203;</div><p class="hist-empty-txt">No readings yet.<br>Tap Log Reading on the dashboard.</p></div>';
+    return;
+  }
+  readings.slice().reverse().forEach(function(r){
+    var d  = new Date(r.ts);
+    var ds = d.toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'}) + ' · ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    var el = document.createElement('div');
+    el.className = 'hist-item';
+    el.innerHTML =
+      '<div class="hist-date">' + ds + '</div>'+
+      '<div class="hist-vals">'+
+        '<div><div class="hist-val-lbl">Heart Rate</div><div class="hist-val-num">'+(r.hr||'—')+'<span class="hist-val-unit"> bpm</span></div></div>'+
+        '<div><div class="hist-val-lbl">Blood Pressure</div><div class="hist-val-num">'+(r.sys?(r.sys+'/'+(r.dia||'—')):'—')+'<span class="hist-val-unit"> mmHg</span></div></div>'+
+        '<div><div class="hist-val-lbl">Weight</div><div class="hist-val-num">'+(r.wt?parseFloat(r.wt).toFixed(1):'—')+'<span class="hist-val-unit"> lbs</span></div></div>'+
+      '</div>';
+    list.appendChild(el);
+  });
+}
+
+// ─────────────────────────────────────
+// TRENDS
+// ─────────────────────────────────────
+function refreshTrends(){
+  var readings = getReadings();
+
+  function drawChart(svgId, lblId, vals, color){
+    var svg = document.getElementById(svgId);
+    var lbl = document.getElementById(lblId);
+    svg.innerHTML = ''; lbl.innerHTML = '';
+    if(vals.length < 2){
+      svg.innerHTML = '<text x="150" y="44" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="#555C68" letter-spacing="2">NOT ENOUGH DATA</text>';
+      return;
+    }
+    var vs = vals.map(function(v){ return v.val; });
+    var mn = Math.min.apply(null, vs), mx = Math.max.apply(null, vs), rng = mx - mn || 1;
+    var pts = vals.map(function(v,i){
+      var x = (i / (vals.length-1)) * 298 + 1;
+      var y = 74 - ((v.val - mn) / rng) * 68 + 1;
+      return x + ',' + y;
+    });
+    // area fill
+    var aPath = 'M' + pts[0] + ' ' + pts.slice(1).map(function(p){ return 'L'+p; }).join(' ') + ' L299,78 L1,78 Z';
+    var area = document.createElementNS('http://www.w3.org/2000/svg','path');
+    area.setAttribute('d', aPath);
+    area.setAttribute('fill', color === '#2ECC71' ? 'rgba(46,204,113,0.08)' : 'rgba(30,136,229,0.08)');
+    svg.appendChild(area);
+    // line
+    var line = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    line.setAttribute('points', pts.join(' '));
+    line.setAttribute('fill','none');
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-linecap','round');
+    line.setAttribute('stroke-linejoin','round');
+    svg.appendChild(line);
+    // dots
+    vals.forEach(function(v, i){
+      var x = (i / (vals.length-1)) * 298 + 1;
+      var y = 74 - ((v.val - mn) / rng) * 68 + 1;
+      var c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r','3');
+      c.setAttribute('fill', color); c.setAttribute('stroke','#0E1014'); c.setAttribute('stroke-width','1.5');
+      svg.appendChild(c);
+    });
+    // labels
+    var step = Math.ceil(vals.length / 5);
+    vals.forEach(function(v, i){
+      if(i % step === 0 || i === vals.length-1){
+        var sp = document.createElement('span');
+        sp.className = 'chart-lbl';
+        sp.textContent = new Date(v.ts).toLocaleDateString([],{month:'numeric',day:'numeric'});
+        lbl.appendChild(sp);
+      }
+    });
+  }
+
+  function setHeader(valId, chgId, vals, unit){
+    if(!vals.length) return;
+    document.getElementById(valId).textContent = vals[vals.length-1].val.toFixed(1) + ' ' + unit;
+    if(vals.length > 1){
+      var diff = vals[vals.length-1].val - vals[0].val;
+      var el = document.getElementById(chgId);
+      if(Math.abs(diff) < 0.5){ el.textContent='→ Stable'; el.className='trend-chg tc-flat'; }
+      else if(diff > 0){ el.textContent='↑ +'+diff.toFixed(1); el.className='trend-chg tc-up'; }
+      else { el.textContent='↓ '+diff.toFixed(1); el.className='trend-chg tc-dn'; }
+    }
+  }
+
+  var hrV  = readings.filter(function(r){ return r.hr; }).map(function(r){ return {val:parseFloat(r.hr),ts:r.ts}; });
+  var bpV  = readings.filter(function(r){ return r.sys; }).map(function(r){ return {val:parseFloat(r.sys),ts:r.ts}; });
+  var wtV  = readings.filter(function(r){ return r.wt; }).map(function(r){ return {val:parseFloat(r.wt),ts:r.ts}; });
+
+  drawChart('ch-hr','cl-hr', hrV, '#1E88E5');
+  drawChart('ch-bp','cl-bp', bpV, '#1E88E5');
+  drawChart('ch-wt','cl-wt', wtV, '#2ECC71');
+  setHeader('tv-hr','tc-hr', hrV, 'bpm');
+  setHeader('tv-bp','tc-bp', bpV, 'mmHg');
+  setHeader('tv-wt','tc-wt', wtV, 'lbs');
+}
+
+// ─────────────────────────────────────
+// PROFILE
+// ─────────────────────────────────────
+function refreshProfile(){
+  var prefs    = getPrefs();
+  var readings = getReadings();
+  var initials = 'HH';
+  if(prefs.name){
+    var pts = prefs.name.split(' ');
+    initials = pts.map(function(p){ return p[0]||''; }).join('').slice(0,2).toUpperCase();
+  }
+  document.getElementById('prof-avatar-big').textContent = initials;
+  document.getElementById('prof-name-el').textContent    = prefs.name || 'Your Name';
+  document.getElementById('prof-user-el').textContent    = currentUser ? currentUser.username : '—';
+  document.getElementById('disp-name').textContent       = prefs.name   || 'Not set';
+  document.getElementById('disp-age').textContent        = prefs.age    ? prefs.age + ' years' : 'Not set';
+  document.getElementById('disp-height').textContent     = prefs.height || 'Not set';
+  document.getElementById('disp-count').textContent      = readings.length + ' reading' + (readings.length !== 1 ? 's' : '');
+  document.getElementById('disp-goal-hr').textContent = prefs.goal_hr ? prefs.goal_hr + ' bpm target'  : 'Not set';
+  document.getElementById('disp-goal-bp').textContent = prefs.goal_bp ? prefs.goal_bp + ' mmHg target' : 'Not set';
+  document.getElementById('disp-goal-wt').textContent = prefs.goal_wt ? prefs.goal_wt + ' lbs target'  : 'Not set';
+  var tog = document.getElementById('tog-reminders');
+  if(prefs.reminders) tog.classList.add('on'); else tog.classList.remove('on');
+}
+
+var editingField = '';
+function editField(key){
+  editingField = key;
+  var prefs = getPrefs();
+  var cfg = {
+    name:   { title:'Full Name',  sub:'Your full name',                  lbl:'Name',   hint:'',                        val: prefs.name   || '' },
+    age:    { title:'Age',        sub:'Your age in years',               lbl:'Age',    hint:'years',                   val: prefs.age    || '' },
+    height: { title:'Height',     sub:"Accepts: 5'11\", 71\", or 180cm", lbl:'Height', hint:"e.g. 5'11\" or 71in or 180cm", val: prefs.height || '' }
+  };
+  var c = cfg[key];
+  document.getElementById('edit-title').textContent = 'Edit ' + c.title;
+  document.getElementById('edit-sub').textContent   = c.sub;
+  document.getElementById('edit-lbl').textContent   = c.lbl;
+  document.getElementById('edit-hint').textContent  = c.hint;
+  document.getElementById('edit-input').value       = c.val;
+  document.getElementById('edit-modal').classList.add('open');
+  setTimeout(function(){ document.getElementById('edit-input').focus(); }, 80);
+}
+
+function editGoal(key){
+  editingField = 'goal_' + key;
+  var prefs = getPrefs();
+  var cfg = {
+    hr: { title:'Heart Rate Goal',     lbl:'Target BPM',      hint:'e.g. 65 bpm resting', val: prefs.goal_hr || '' },
+    bp: { title:'Blood Pressure Goal', lbl:'Target Systolic', hint:'e.g. 115 mmHg sys',   val: prefs.goal_bp || '' },
+    wt: { title:'Weight Goal',         lbl:'Target Weight',   hint:'e.g. 180 lbs',         val: prefs.goal_wt || '' }
+  };
+  var c = cfg[key];
+  document.getElementById('edit-title').textContent = c.title;
+  document.getElementById('edit-sub').textContent   = 'Your personal target';
+  document.getElementById('edit-lbl').textContent   = c.lbl;
+  document.getElementById('edit-hint').textContent  = c.hint;
+  var inp = document.getElementById('edit-input');
+  inp.value = c.val;
+  inp.type = 'number';
+  inp.inputMode = 'numeric';
+  document.getElementById('edit-modal').classList.add('open');
+  setTimeout(function(){ inp.focus(); }, 80);
+}
+
+function saveEdit(){
+  var val   = document.getElementById('edit-input').value.trim();
+  var prefs = getPrefs();
+  prefs[editingField] = val;
+  savePrefs(prefs);
+  closeModal('edit-modal');
+  refreshProfile();
+  if(editingField === 'name' || editingField === 'height') refreshHome();
+  if(editingField.indexOf('goal_') === 0) refreshHome();
+  // Show saved confirmation on the row
+  var labels = { name:'disp-name', age:'disp-age', height:'disp-height' };
+  var dispEl = document.getElementById(labels[editingField]);
+  if(dispEl){
+    var orig = dispEl.style.color;
+    dispEl.style.color = 'var(--green)';
+    dispEl.textContent = (val || 'Not set') + '  ✓ Saved';
+    setTimeout(function(){
+      dispEl.style.color = orig;
+      refreshProfile();
+    }, 2000);
+  }
+  showToast('✓ ' + editingField.charAt(0).toUpperCase() + editingField.slice(1) + ' saved');
+}
+
+function togglePref(key){
+  var prefs = getPrefs();
+  prefs[key] = !prefs[key];
+  savePrefs(prefs);
+  refreshProfile();
+}
+
+function clearData(){
+  if(confirm('Delete ALL readings? This cannot be undone.')){
+    saveReadings([]);
+    refreshProfile();
+    showToast('✓ All readings cleared');
+  }
+}
+
+// ─────────────────────────────────────
+// LOG MODAL
+// ─────────────────────────────────────
+function openLogModal(){
+  var now = new Date();
+  document.getElementById('log-modal-date').textContent = now.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+  document.getElementById('log-modal').classList.add('open');
+  setTimeout(function(){ document.getElementById('in-hr').focus(); }, 80);
+}
+
+function saveReading(){
+  var hr  = document.getElementById('in-hr').value.trim();
+  var sys = document.getElementById('in-sys').value.trim();
+  var dia = document.getElementById('in-dia').value.trim();
+  var wt  = document.getElementById('in-wt').value.trim();
+  if(!hr && !sys && !wt){ alert('Enter at least one value.'); return; }
+  var readings = getReadings();
+  var newReading = { ts:Date.now(), hr:hr||null, sys:sys||null, dia:dia||null, wt:wt||null };
+  readings.push(newReading);
+  saveReadings(readings);
+  ['in-hr','in-sys','in-dia','in-wt'].forEach(function(id){ document.getElementById(id).value = ''; });
+  closeModal('log-modal');
+  refreshHome();
+  showAIInsight(newReading, readings);
+}
+
+// ─────────────────────────────────────
+// MODALS
+// ─────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function bgClose(e, id){ if(e.target === document.getElementById(id)) closeModal(id); }
+
+// ─────────────────────────────────────
+// AI INSIGHT
+// ─────────────────────────────────────
+function showAIInsight(latest, allReadings){
+  var prefs = getPrefs();
+
+  // Build reading summary cards
+  var summaryEl = document.getElementById('ai-reading-summary');
+  summaryEl.innerHTML =
+    '<div class="ai-reading-item"><div class="ai-reading-lbl">Heart Rate</div><div class="ai-reading-val">'+(latest.hr ? latest.hr+' bpm' : '—')+'</div></div>'+
+    '<div class="ai-reading-item"><div class="ai-reading-lbl">Blood Pressure</div><div class="ai-reading-val">'+(latest.sys ? latest.sys+'/'+(latest.dia||'—') : '—')+'</div></div>'+
+    '<div class="ai-reading-item"><div class="ai-reading-lbl">Weight</div><div class="ai-reading-val">'+(latest.wt ? parseFloat(latest.wt).toFixed(1)+' lbs' : '—')+'</div></div>';
+
+  // Show modal with loading state
+  document.getElementById('ai-loading').style.display = 'flex';
+  document.getElementById('ai-insight-text').style.display = 'none';
+  document.getElementById('ai-modal').classList.add('open');
+
+  // Build context for Claude
+  var recent = allReadings.slice(-10);
+  var context = 'User profile: ' + (prefs.name||'Unknown') + ', age ' + (prefs.age||'unknown') + '.\n';
+  context += 'Goals: HR ' + (prefs.goal_hr||'none') + ' bpm, BP ' + (prefs.goal_bp||'none') + ' mmHg sys, Weight ' + (prefs.goal_wt||'none') + ' lbs.\n';
+  context += 'Latest reading: HR=' + (latest.hr||'—') + ' bpm, BP=' + (latest.sys||'—') + '/' + (latest.dia||'—') + ' mmHg, Weight=' + (latest.wt||'—') + ' lbs.\n';
+  if(recent.length > 1){
+    context += 'Recent history (last ' + recent.length + ' readings):\n';
+    recent.forEach(function(r){
+      var d = new Date(r.ts).toLocaleDateString();
+      context += '  ' + d + ': HR=' + (r.hr||'—') + ', BP=' + (r.sys||'—') + '/' + (r.dia||'—') + ', Wt=' + (r.wt||'—') + '\n';
+    });
+  }
+
+  var prompt = context + '\nProvide a brief executive cardiovascular performance analysis (3-4 sentences max). Be direct and specific. Note trends, flag anything worth watching, and comment on goal progress if goals are set. Do not use bullet points. Do not say "I" or give disclaimers. End with one actionable recommendation.';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 200,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  })
+  .then(function(res){ return res.json(); })
+  .then(function(data){
+    var text = '';
+    if(data.content && data.content[0] && data.content[0].text){
+      text = data.content[0].text;
+    } else if(data.error){
+      text = 'Analysis unavailable. Check your connection and try again.';
+    }
+    document.getElementById('ai-loading').style.display = 'none';
+    var el = document.getElementById('ai-insight-text');
+    el.style.display = 'block';
+    el.textContent = text;
+  })
+  .catch(function(){
+    document.getElementById('ai-loading').style.display = 'none';
+    var el = document.getElementById('ai-insight-text');
+    el.style.display = 'block';
+    el.textContent = 'Analysis unavailable. Check your connection and try again.';
+  });
+}
+
+// ─────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 2500);
+}
+
+// ─────────────────────────────────────
+// PDF EXPORT
+// ─────────────────────────────────────
+function exportPDF(){
+  var prefs = getPrefs();
+  var now   = new Date();
+  document.body.setAttribute('data-print-date', now.toLocaleDateString([], {year:'numeric',month:'long',day:'numeric'}));
+  var pn = document.getElementById('print-name-el');
+  var pd = document.getElementById('print-date-el');
+  if(pn) pn.textContent = prefs.name || 'Health Report';
+  if(pd) pd.textContent = 'Generated: ' + now.toLocaleDateString([], {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  showScreen('home');
+  setTimeout(function(){ window.print(); }, 150);
+}
+
+// ─────────────────────────────────────
+// INIT
+// ─────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function(){
+  var sessionUser = getSession();
+  if(sessionUser){
+    var users = getUsers();
+    for(var i=0; i<users.length; i++){
+      if(users[i].username === sessionUser){
+        currentUser = users[i];
+        showScreen('home');
+        return;
+      }
+    }
+  }
+  showScreen('login');
+});
+</script>
+</body>
+</html>
