@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hare Health — Product Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1014; --surface:#111827; --surface2:#1C2028; --border:#1F2937;
+  --accent:#1E88E5; --adim:rgba(30,136,229,0.12);
+  --green:#2ECC71; --gdim:rgba(46,204,113,0.12);
+  --red:#E53935; --orange:#FF9800; --purple:#AB47BC; --cyan:#4FC3F7;
+  --text:#FFFFFF; --text2:#A0A7B4; --text3:#8A93A3;
+  --mono:'DM Mono',monospace; --sans:'Inter',-apple-system,sans-serif; --display:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5;}
+
+.doc{max-width:1080px;margin:0 auto;padding:56px 40px 120px;}
+
+/* ── MASTHEAD ── */
+.mast{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-bottom:28px;border-bottom:1px solid var(--border);margin-bottom:48px;flex-wrap:wrap;}
+.mast-left{display:flex;align-items:center;gap:16px;}
+.mast-logo svg{height:38px;width:auto;display:block;}
+.mast-title{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#F0F2F5;}
+.mast-meta{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);text-align:right;line-height:1.8;}
+.mast-meta .mm-val{color:var(--text2);}
+
+/* ── EYEBROW / DOC TITLE ── */
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+h1.doc-title{font-family:var(--display);font-size:56px;font-weight:800;letter-spacing:-0.02em;line-height:1.05;margin-bottom:16px;}
+.doc-lede{font-size:17px;color:var(--text2);max-width:720px;line-height:1.65;margin-bottom:44px;}
+
+/* ── SECTION ── */
+section{margin-bottom:56px;}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.sec-num{font-family:var(--mono);font-size:11px;letter-spacing:0.22em;color:var(--text3);}
+.sec-title{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-0.015em;}
+
+/* ── SCORECARD ── */
+.score-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.score-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:12px;padding:22px 22px 20px;}
+.score-card.good{border-left-color:var(--green);}
+.score-card.ok{border-left-color:var(--accent);}
+.score-card.warn{border-left-color:var(--orange);}
+.score-card.risk{border-left-color:var(--red);}
+.score-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.score-row{display:flex;align-items:baseline;gap:6px;margin-bottom:8px;}
+.score-num{font-family:var(--display);font-size:44px;font-weight:700;letter-spacing:-0.02em;line-height:1;}
+.score-max{font-family:var(--mono);font-size:13px;color:var(--text3);}
+.score-verdict{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;}
+.score-verdict.good{color:var(--green);}
+.score-verdict.ok{color:var(--accent);}
+.score-verdict.warn{color:var(--orange);}
+.score-verdict.risk{color:var(--red);}
+.score-note{font-size:12px;color:var(--text2);margin-top:10px;line-height:1.55;}
+
+.overall{grid-column:1 / -1;background:linear-gradient(135deg,rgba(30,136,229,0.08),rgba(30,136,229,0.02));border:1px solid rgba(30,136,229,0.25);border-left:3px solid var(--accent);border-radius:12px;padding:26px 26px 24px;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;}
+.overall .ov-num{font-family:var(--display);font-size:72px;font-weight:800;letter-spacing:-0.03em;line-height:1;color:var(--text);}
+.overall .ov-max{font-family:var(--mono);font-size:14px;color:var(--text3);margin-left:4px;}
+.overall .ov-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.overall .ov-body{font-size:14px;color:var(--text2);line-height:1.65;}
+.overall .ov-body strong{color:var(--text);font-weight:600;}
+
+/* ── PERSONA HEADER ── */
+.persona{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:20px;}
+.persona-badge{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.08em;}
+.persona-badge.exec{background:rgba(171,71,188,0.12);border:1px solid rgba(171,71,188,0.3);color:var(--purple);}
+.persona-badge.dev{background:var(--adim);border:1px solid rgba(30,136,229,0.3);color:var(--accent);}
+.persona-name{font-family:var(--display);font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:2px;}
+.persona-role{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);}
+
+/* ── FINDING CARDS ── */
+.findings{display:flex;flex-direction:column;gap:12px;}
+.finding{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:10px;padding:18px 20px;}
+.finding.p1{border-left-color:var(--red);}
+.finding.p2{border-left-color:var(--orange);}
+.finding.p3{border-left-color:var(--accent);}
+.finding.win{border-left-color:var(--green);}
+.finding-hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+.finding-title{font-size:15px;font-weight:600;letter-spacing:-0.005em;}
+.tag-row{display:flex;gap:6px;flex-shrink:0;}
+.tag{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;padding:3px 8px;border-radius:4px;border:1px solid var(--border);color:var(--text3);}
+.tag.p1{background:rgba(229,57,53,0.1);border-color:rgba(229,57,53,0.3);color:var(--red);}
+.tag.p2{background:rgba(255,152,0,0.1);border-color:rgba(255,152,0,0.3);color:var(--orange);}
+.tag.p3{background:var(--adim);border-color:rgba(30,136,229,0.3);color:var(--accent);}
+.tag.win{background:var(--gdim);border-color:rgba(46,204,113,0.3);color:var(--green);}
+.tag.effort{color:var(--text2);}
+.finding-body{font-size:13.5px;color:var(--text2);line-height:1.65;}
+.finding-body strong{color:var(--text);font-weight:600;}
+.finding-body + .finding-fix{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+.finding-fix{font-family:var(--mono);font-size:11px;line-height:1.65;color:var(--text3);letter-spacing:0.02em;}
+.finding-fix .fix-lbl{color:var(--accent);letter-spacing:0.14em;text-transform:uppercase;font-size:10px;margin-right:6px;}
+
+/* ── AI TABLE ── */
+.ai-table{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.ai-row{display:grid;grid-template-columns:28px 1.2fr 2fr 0.8fr 0.9fr;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);align-items:start;}
+.ai-row:last-child{border-bottom:none;}
+.ai-row.head{background:rgba(255,255,255,0.015);}
+.ai-row.head > *{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);}
+.ai-idx{font-family:var(--mono);font-size:11px;color:var(--text3);padding-top:2px;}
+.ai-name{font-size:14px;font-weight:600;letter-spacing:-0.005em;}
+.ai-name-sub{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.06em;margin-top:3px;}
+.ai-desc{font-size:12.5px;color:var(--text2);line-height:1.6;}
+.ai-impact,.ai-effort{font-family:var(--mono);font-size:11px;letter-spacing:0.06em;padding-top:2px;}
+.impact-h{color:var(--green);}
+.impact-m{color:var(--orange);}
+.impact-l{color:var(--text3);}
+
+/* ── ROADMAP ── */
+.roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.horizon{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.horizon-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.horizon-num{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--accent);}
+.horizon-range{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.08em;}
+.horizon-title{font-family:var(--display);font-size:17px;font-weight:700;letter-spacing:-0.01em;margin-bottom:12px;margin-top:8px;}
+.horizon ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+.horizon li{font-size:12.5px;color:var(--text2);line-height:1.55;padding-left:16px;position:relative;}
+.horizon li:before{content:"";position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:0.55;}
+.horizon li strong{color:var(--text);font-weight:600;}
+
+/* ── METRICS / KPI row ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 16px 14px;}
+.kpi-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.kpi-val{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1;}
+.kpi-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;}
+.kpi-val .unit{font-family:var(--mono);font-size:12px;color:var(--text3);margin-left:3px;font-weight:400;}
+
+/* ── CALLOUT ── */
+.callout{background:var(--adim);border:1px solid rgba(30,136,229,0.25);border-radius:10px;padding:18px 22px;margin:20px 0;}
+.callout-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.callout p{font-size:13.5px;color:var(--text);line-height:1.7;}
+
+/* ── POSITIONING MATRIX ── */
+.matrix-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 24px 20px;}
+.matrix-title{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:14px;}
+.matrix{position:relative;height:360px;border-left:1px solid var(--border);border-bottom:1px solid var(--border);margin:28px 30px 60px 110px;}
+.matrix-y{position:absolute;left:-92px;top:50%;transform:translate(-50%,-50%) rotate(-90deg);transform-origin:center center;font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);white-space:nowrap;}
+.matrix-x{position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);white-space:nowrap;}
+.matrix-y-hi,.matrix-y-lo,.matrix-x-hi,.matrix-x-lo{position:absolute;font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);opacity:0.6;}
+.matrix-y-hi{top:-4px;left:-28px;}
+.matrix-y-lo{bottom:-4px;left:-28px;}
+.matrix-x-hi{right:-4px;bottom:-18px;}
+.matrix-x-lo{left:-4px;bottom:-18px;}
+.dot{position:absolute;transform:translate(-50%,50%);display:flex;align-items:center;gap:8px;}
+.dot-node{width:10px;height:10px;border-radius:50%;background:var(--text3);border:2px solid var(--bg);flex-shrink:0;}
+.dot.hh .dot-node{width:14px;height:14px;background:var(--accent);box-shadow:0 0 0 4px rgba(30,136,229,0.18);}
+.dot-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:var(--text2);white-space:nowrap;}
+.dot.hh .dot-lbl{color:var(--accent);font-weight:500;}
+.matrix-grid-h{position:absolute;left:0;right:0;top:50%;border-top:1px dashed var(--border);opacity:0.5;}
+.matrix-grid-v{position:absolute;top:0;bottom:0;left:50%;border-left:1px dashed var(--border);opacity:0.5;}
+
+/* ── FOOTER ── */
+footer{margin-top:72px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.foot-txt{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);}
+.foot-link{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;color:var(--accent);text-decoration:none;padding:8px 14px;border:1px solid rgba(30,136,229,0.3);border-radius:6px;transition:background 0.15s;}
+.foot-link:hover{background:var(--adim);}
+
+/* ── TWO-COL for exec summary quote-style ── */
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+/* ── ECG decoration ── */
+.ecg-deco{height:20px;width:100%;opacity:0.25;margin:-18px 0 36px;display:block;}
+
+/* ── MOBILE ── */
+@media(max-width:900px){
+  .score-grid{grid-template-columns:1fr 1fr;}
+  .overall{grid-template-columns:auto 1fr;}
+  .roadmap{grid-template-columns:1fr;}
+  .ai-row{grid-template-columns:1fr;gap:6px;}
+  .ai-row.head{display:none;}
+  .ai-row{padding:14px 16px;}
+  .twocol{grid-template-columns:1fr;}
+  .kpi-row{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:640px){
+  .doc{padding:32px 20px 80px;}
+  h1.doc-title{font-size:38px;}
+  .score-grid{grid-template-columns:1fr;}
+  .matrix{margin:28px 20px 60px 90px;}
+}
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ══════════════════════════════════════
+       MASTHEAD
+  ══════════════════════════════════════ -->
+  <div class="mast">
+    <div class="mast-left">
+      <div class="mast-logo">
+        <svg width="38" height="38" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+          <rect x="37" y="2" width="7" height="40" rx="3.5" fill="#1E88E5"/>
+          <polyline points="7,22 11,22 15,6 20,38 25,10 29,22 37,22" stroke="#1E88E5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="mast-title">Hare Health</div>
+    </div>
+    <div class="mast-meta">
+      <div>Product Assessment · v1</div>
+      <div class="mm-val">April 2026 · Internal Review</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TITLE
+  ══════════════════════════════════════ -->
+  <div class="eyebrow">Expert Review · Market + Engineering</div>
+  <h1 class="doc-title">What's strong.<br>What's next.</h1>
+  <p class="doc-lede">A candid assessment of the Hare Health MVP from two perspectives — a senior market executive focused on positioning, adoption and growth; and a senior software developer focused on architecture, reliability and AI. Visual system and existing file structure preserved; all recommendations are additive.</p>
+
+  <svg class="ecg-deco" viewBox="0 0 1000 20" preserveAspectRatio="none">
+    <polyline points="0,10 200,10 210,10 215,3 220,17 225,10 400,10 410,10 415,3 420,17 425,10 600,10 610,10 615,3 620,17 625,10 800,10 810,10 815,3 820,17 825,10 1000,10" fill="none" stroke="#1E88E5" stroke-width="1.2"/>
+  </svg>
+
+  <!-- ══════════════════════════════════════
+       SECTION 1 · SCORECARD
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">Executive Scorecard</h2>
+    </div>
+
+    <div class="score-grid">
+      <div class="overall">
+        <div>
+          <div class="ov-lbl">Overall Readiness</div>
+          <div><span class="ov-num">7.4</span><span class="ov-max">/10</span></div>
+        </div>
+        <div class="ov-body">
+          <strong>Verdict:</strong> Hare Health is a polished, self-contained MVP with a distinct visual identity and a genuinely useful risk engine. It is clearly ahead of typical "BP tracker" apps on look-and-feel and on narrative output. To convert that into a real business, it needs a clearer clinical voice, a real backend, and AI that feels personal — not just the word "AI" on a strip.
+        </div>
+      </div>
+
+      <div class="score-card good">
+        <div class="score-lbl">Design &amp; Brand</div>
+        <div class="score-row"><div class="score-num">8.7</div><div class="score-max">/10</div></div>
+        <div class="score-verdict good">Distinctive</div>
+        <div class="score-note">Confident visual system — Syne numerals, monospace labels, calm navy. Outperforms category on taste.</div>
+      </div>
+
+      <div class="score-card ok">
+        <div class="score-lbl">Core UX</div>
+        <div class="score-row"><div class="score-num">7.8</div><div class="score-max">/10</div></div>
+        <div class="score-verdict ok">Strong</div>
+        <div class="score-note">Inline logger is best-in-class. History, trends, BMI all coherent. Onboarding and empty states need love.</div>
+      </div>
+
+      <div class="score-card warn">
+        <div class="score-lbl">AI Depth</div>
+        <div class="score-row"><div class="score-num">5.2</div><div class="score-max">/10</div></div>
+        <div class="score-verdict warn">Thin</div>
+        <div class="score-note">Rule-based narrative dressed as AI. A real LLM call on latest + context would 10× perceived value.</div>
+      </div>
+
+      <div class="score-card warn">
+        <div class="score-lbl">Architecture</div>
+        <div class="score-row"><div class="score-num">6.0</div><div class="score-max">/10</div></div>
+        <div class="score-verdict warn">MVP-grade</div>
+        <div class="score-note">Single-file localStorage works for prototype. No sync, no multi-device, no audit trail. Scaling requires a real backend.</div>
+      </div>
+
+      <div class="score-card risk">
+        <div class="score-lbl">Trust &amp; Compliance</div>
+        <div class="score-row"><div class="score-num">4.8</div><div class="score-max">/10</div></div>
+        <div class="score-verdict risk">Gap</div>
+        <div class="score-note">Plaintext passwords in localStorage, public EmailJS key, no privacy policy, no medical disclaimer surface. Blocker for paid growth.</div>
+      </div>
+
+      <div class="score-card ok">
+        <div class="score-lbl">Monetization Readiness</div>
+        <div class="score-row"><div class="score-num">6.5</div><div class="score-max">/10</div></div>
+        <div class="score-verdict ok">Plausible</div>
+        <div class="score-note">PDF export and risk engine hint at clear paid tiers. Needs clinician-ready output + data sync to justify price.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 2 · WHAT'S WORKING
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">What's Working</h2>
+    </div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:720px;line-height:1.65;">Before we critique, the things worth protecting — these are the product's moat and should not be touched in the next iteration.</p>
+
+    <div class="findings">
+      <div class="finding win">
+        <div class="finding-hdr">
+          <div class="finding-title">Visual identity reads "serious instrument," not "wellness app"</div>
+          <div class="tag-row"><span class="tag win">Keep</span></div>
+        </div>
+        <div class="finding-body">The Syne + DM Mono + navy combo is genuinely differentiated in the consumer-health category, which is saturated with pastel gradients and rounded emoji. The ECG draw-in on login, the left-border risk colors, and the pulsing status dots sell credibility in 400ms. <strong>This is your brand — protect it.</strong></div>
+        </div>
+
+      <div class="finding win">
+        <div class="finding-hdr">
+          <div class="finding-title">The inline logger is the best UX in the app</div>
+          <div class="tag-row"><span class="tag win">Keep</span></div>
+        </div>
+        <div class="finding-body">Tap to expand → auto-advance BP fields → live risk preview while typing → debounced recalculation. This reduces logging friction to roughly 8 seconds, which is the single most important metric for a tracker's retention. Most competitors force a modal + 4 taps.</div>
+      </div>
+
+      <div class="finding win">
+        <div class="finding-hdr">
+          <div class="finding-title">Risk engine with narrative output</div>
+          <div class="tag-row"><span class="tag win">Keep</span></div>
+        </div>
+        <div class="finding-body"><code style="font-family:var(--mono);font-size:12px;color:var(--accent);">calcRiskEngine</code> weights BP 50% / HR 30% / BMI 20%, produces a named driver, and surfaces a trend-aware narrative. That's already more interpretable than Apple Health or Withings, which show you numbers and expect you to do the thinking.</div>
+      </div>
+
+      <div class="finding win">
+        <div class="finding-hdr">
+          <div class="finding-title">Print-optimized PDF export</div>
+          <div class="tag-row"><span class="tag win">Keep</span></div>
+        </div>
+        <div class="finding-body">Clinician-shareable output is the #1 feature that moves self-trackers from "nice toy" to "actual utility." The <code style="font-family:var(--mono);font-size:12px;color:var(--accent);">@media print</code> rules and the auto-generated footer are a clear competitive wedge. Double down on this.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 3 · MARKET EXEC PERSPECTIVE
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Senior Market Executive</h2>
+    </div>
+
+    <div class="persona">
+      <div class="persona-badge exec">M/E</div>
+      <div>
+        <div class="persona-name">Market Executive Review</div>
+        <div class="persona-role">Positioning · Adoption · Growth · Monetization</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-lbl">Logging Friction</div>
+        <div class="kpi-val">~8<span class="unit">sec</span></div>
+        <div class="kpi-sub">Industry avg ~22s</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">D1 Aha Moment</div>
+        <div class="kpi-val">Weak</div>
+        <div class="kpi-sub">No immediate value on 1st reading</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Shareability</div>
+        <div class="kpi-val">Low</div>
+        <div class="kpi-sub">PDF only, no link share</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Premium Wedge</div>
+        <div class="kpi-val">Unclear</div>
+        <div class="kpi-sub">No paid tier defined</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-lbl">Positioning thesis</div>
+      <p>Hare Health is not "another BP tracker." The visual system and the narrative risk score position it against <strong>Qardio, Withings Health Mate, and Omron Connect</strong> — but it reads younger, more design-forward, and more opinionated. The natural customer is the 35–55-year-old <em>performance-oriented adult</em> who bought a BP cuff because their doctor suggested it and now wants a respectful, non-infantilizing way to own their data. Lean into this. Do not chase the "full wellness" crowd.</p>
+    </div>
+
+    <h3 style="font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-0.01em;margin:32px 0 14px;">Recommendations — Market</h3>
+
+    <div class="findings">
+      <div class="finding p1">
+        <div class="finding-hdr">
+          <div class="finding-title">M1 · Sharpen the first-90-seconds story</div>
+          <div class="tag-row"><span class="tag p1">P1 · Adoption</span><span class="tag effort">S</span></div>
+        </div>
+        <div class="finding-body">A new user today lands on an empty dashboard with "NO READINGS YET" and a blue CTA. There is no <strong>promise</strong>. Add one line above the logger on the empty state: <em>"Your first reading unlocks your cardiovascular risk score in under 10 seconds."</em> This is the hook that sells scroll-past-download conversion.</div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Add empty-state hero copy + a 3-step "how it works" strip that hides after the first reading is logged.</div>
+      </div>
+
+      <div class="finding p1">
+        <div class="finding-hdr">
+          <div class="finding-title">M2 · Add a clear paid tier — "Hare Health Pro"</div>
+          <div class="tag-row"><span class="tag p1">P1 · Revenue</span><span class="tag effort">M</span></div>
+        </div>
+        <div class="finding-body">Free tier: unlimited logging, basic risk, 30-day history, PDF export. <strong>Pro ($4.99/mo or $39/yr):</strong> AI analysis on every reading, unlimited history, trend forecasting, medication &amp; symptom tags, white-label PDF for your doctor, data export (CSV/Apple Health/Google Fit), iCloud/cross-device sync. The AI cost ceiling is manageable because risk recalcs can stay rule-based; only <em>interpretation</em> goes to the LLM.</div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Gate the AI Insight modal, forecasting, and 90-day+ history behind Pro. Show the locked state as a tasteful preview, not a wall.</div>
+      </div>
+
+      <div class="finding p1">
+        <div class="finding-hdr">
+          <div class="finding-title">M3 · The "Share with your doctor" moment</div>
+          <div class="tag-row"><span class="tag p1">P1 · Defensibility</span><span class="tag effort">M</span></div>
+        </div>
+        <div class="finding-body">The PDF is already there — but it's buried under History → Export. Surface a top-level "<strong>Doctor Report</strong>" action on the home screen the moment a user has 7+ readings. That single interaction is the one users tell friends about and the one that justifies a paid tier. Generate the PDF with a page 1 summary (risk, averages, adherence), pages 2–3 daily readings table, and a page 4 with an AI-written "key observations" paragraph.</div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>New home-screen card "Doctor Report Ready" appears at 7 readings. Add a "Physician mode" export that swaps colors for print legibility.</div>
+      </div>
+
+      <div class="finding p2">
+        <div class="finding-hdr">
+          <div class="finding-title">M4 · Trust surface — the word "medical" is missing</div>
+          <div class="tag-row"><span class="tag p2">P2 · Compliance</span><span class="tag effort">S</span></div>
+        </div>
+        <div class="finding-body">The app does not say anywhere visible: (a) "not a medical device," (b) "data stored on your device only," (c) privacy policy link, (d) what happens to data on account deletion. For App Store review, HIPAA marketing, and EU distribution, these are non-optional. The good news: this is a 1-day copy-and-link task.</div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Add a small "About &amp; Legal" section in Profile with: disclaimer, privacy policy, terms, data export, delete account. Add "Not a medical device — screening tool only" as a persistent 10px line in the print footer (already done) and in the Profile screen.</div>
+      </div>
+
+      <div class="finding p2">
+        <div class="finding-hdr">
+          <div class="finding-title">M5 · Retention loops beyond "log streak"</div>
+          <div class="tag-row"><span class="tag p2">P2 · Retention</span><span class="tag effort">M</span></div>
+        </div>
+        <div class="finding-body">Current app has reminders toggle but no weekly recap, no milestone moments, no intrinsic reason to come back on Day 8. The two highest-leverage additions: (1) <strong>Weekly Pulse</strong> — Sunday 8am push/email with a 1-paragraph AI summary + trend chart; (2) <strong>Milestone cards</strong> — "First 7 days complete," "30-day average improved 4 mmHg," "Goal achieved." Both are cheap to build and measurably move D30 retention in this category.</div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Cron/scheduled job sends Weekly Pulse email (EmailJS is already wired). Add a <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">milestones</code> array in storage and a toast-style celebration component.</div>
+      </div>
+
+      <div class="finding p3">
+        <div class="finding-hdr">
+          <div class="finding-title">M6 · Brand extensions worth testing</div>
+          <div class="tag-row"><span class="tag p3">P3 · Growth</span><span class="tag effort">M</span></div>
+        </div>
+        <div class="finding-body">The "Cardiovascular Intelligence" positioning extends naturally to: <strong>Hare Health Family</strong> (shared household dashboard for spouses/parents), <strong>Hare Health for Employers</strong> (B2B2C benefits-style rollout), and <strong>Hare Health Rx</strong> (medication adherence logging). All three use the same engine. Do not build them yet — but reserve the names and the URL routes.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 4 · POSITIONING MATRIX
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">Competitive Positioning</h2>
+    </div>
+
+    <div class="matrix-wrap">
+      <div class="matrix-title">Design Sophistication × Clinical Depth — where Hare Health sits today and where it could go</div>
+      <div class="matrix">
+        <div class="matrix-grid-h"></div>
+        <div class="matrix-grid-v"></div>
+        <div class="matrix-y">Design Sophistication</div>
+        <div class="matrix-y-hi">Hi</div>
+        <div class="matrix-y-lo">Lo</div>
+        <div class="matrix-x">Clinical Depth &amp; Trust</div>
+        <div class="matrix-x-lo">Lo</div>
+        <div class="matrix-x-hi">Hi</div>
+
+        <!-- competitors -->
+        <div class="dot" style="left:18%;bottom:18%;"><span class="dot-node"></span><span class="dot-lbl">Generic BP trackers</span></div>
+        <div class="dot" style="left:40%;bottom:36%;"><span class="dot-node"></span><span class="dot-lbl">Omron Connect</span></div>
+        <div class="dot" style="left:58%;bottom:46%;"><span class="dot-node"></span><span class="dot-lbl">Withings</span></div>
+        <div class="dot" style="left:52%;bottom:60%;"><span class="dot-node"></span><span class="dot-lbl">Qardio</span></div>
+        <div class="dot" style="left:76%;bottom:50%;"><span class="dot-node"></span><span class="dot-lbl">Apple Health</span></div>
+
+        <!-- Hare Health today -->
+        <div class="dot hh" style="left:44%;bottom:75%;"><span class="dot-node"></span><span class="dot-lbl">Hare Health · today</span></div>
+        <!-- Where we want to go -->
+        <div class="dot" style="left:74%;bottom:82%;"><span class="dot-node" style="background:rgba(30,136,229,0.35);border-style:dashed;"></span><span class="dot-lbl" style="color:var(--accent);opacity:0.7;">Hare Health · 12mo target</span></div>
+      </div>
+      <p style="font-family:var(--mono);font-size:11px;color:var(--text3);line-height:1.7;margin-top:6px;">The upper-right quadrant — <strong style="color:var(--text2);">high design + high clinical depth</strong> — is genuinely uncontested in consumer cardiovascular. Hare Health can own it with the right AI + clinician-facing output.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 5 · SR DEV PERSPECTIVE
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">Senior Software Developer</h2>
+    </div>
+
+    <div class="persona">
+      <div class="persona-badge dev">DEV</div>
+      <div>
+        <div class="persona-name">Engineering Review</div>
+        <div class="persona-role">Architecture · Reliability · Security · AI Integration</div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-lbl">Source File</div>
+        <div class="kpi-val">3,769<span class="unit">lines</span></div>
+        <div class="kpi-sub">Single HTML, monolithic</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Persistence</div>
+        <div class="kpi-val">localStorage</div>
+        <div class="kpi-sub">No sync, no backup</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Auth</div>
+        <div class="kpi-val">Plain</div>
+        <div class="kpi-sub">Passwords in clear-text JSON</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">AI calls</div>
+        <div class="kpi-val">0</div>
+        <div class="kpi-sub">All insight is rule-based</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-lbl">Engineering thesis</div>
+      <p>The single-HTML architecture was the right call for an MVP — shipping speed over everything. But the next 6 months require three structural moves: <strong>(1) a real backend</strong> for sync and auth, <strong>(2) a real LLM integration</strong> so "AI" stops being a sticker, and <strong>(3) a modular front-end split</strong> so features stop fighting for space in one 3,800-line file. These can be done without breaking the current visual and UX contract — the styles, the flow, and the data shape all survive the refactor.</p>
+    </div>
+
+    <h3 style="font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-0.01em;margin:32px 0 14px;">Recommendations — Engineering</h3>
+
+    <div class="findings">
+      <div class="finding p1">
+        <div class="finding-hdr">
+          <div class="finding-title">D1 · Security — passwords in localStorage is blocking</div>
+          <div class="tag-row"><span class="tag p1">P1 · Security</span><span class="tag effort">S–M</span></div>
+        </div>
+        <div class="finding-body">
+          <code style="font-family:var(--mono);font-size:12px;color:var(--accent);">hh2_users</code> currently stores <code style="font-family:var(--mono);font-size:12px;color:var(--accent);">{username, password}</code> as plaintext JSON on the device. Even for a "local-only" product, this is a reputational blocker and fails basic App Store / Play Store review. Additionally, the EmailJS public key and service/template IDs are exposed in the source — fine for free-tier usage, but easily abused.
+        </div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Hash passwords with <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">crypto.subtle.digest("SHA-256", ...)</code> + per-user salt <em>today</em>. Move to a real auth (Supabase, Clerk, or Firebase Auth) within 60 days. Rate-limit EmailJS on the server side or migrate to a backend-issued mail call.</div>
+      </div>
+
+      <div class="finding p1">
+        <div class="finding-hdr">
+          <div class="finding-title">D2 · Real AI integration — replace the rule-based "AI Strip"</div>
+          <div class="tag-row"><span class="tag p1">P1 · Differentiation</span><span class="tag effort">M</span></div>
+        </div>
+        <div class="finding-body">
+          Today, <code style="font-family:var(--mono);font-size:12px;color:var(--accent);">generateLocalAnalysis</code> stitches if/else sentences. Users can smell this within 3 readings, and it caps perceived intelligence at "clever dashboard." <strong>Replace with a streaming LLM call on the user's last 14 readings + goals + context.</strong> Keep the rule-based engine as a fallback for offline mode. Budget: Claude Haiku or GPT-4o-mini at ~$0.0002 per call × 2 calls/user/day × 10K DAU = ~$120/mo. Trivial at that cost, and it fundamentally changes the product.
+        </div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Introduce <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">getAIAnalysis(readings, prefs, goals)</code> that returns a 2-sentence narrative + 1 action suggestion. Cache server-side per reading-hash so re-opens are free. Keep current strip as visual shell — only the text changes.</div>
+      </div>
+
+      <div class="finding p1">
+        <div class="finding-hdr">
+          <div class="finding-title">D3 · Backend — readings need to live server-side</div>
+          <div class="tag-row"><span class="tag p1">P1 · Scale</span><span class="tag effort">L</span></div>
+        </div>
+        <div class="finding-body">
+          Multi-device, account recovery, Pro-tier sync, and the Weekly Pulse email all require a real datastore. A minimal Supabase or Firebase schema is <em>half a day of work</em>:
+          <br><br>
+          <code style="font-family:var(--mono);font-size:11px;color:var(--accent);display:block;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-top:8px;line-height:1.7;">users (id, email, created_at, pro_status, goals jsonb)<br>readings (id, user_id, ts, sys, dia, hr, notes)<br>insights (id, user_id, reading_id, ai_text, generated_at)<br>sessions (id, user_id, device, last_seen)</code>
+        </div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Start with Supabase (free tier covers the first 500 MAU). Add a <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">sync()</code> function that replays localStorage → cloud on first login, then reads from cloud on subsequent loads. localStorage stays as offline cache.</div>
+      </div>
+
+      <div class="finding p2">
+        <div class="finding-hdr">
+          <div class="finding-title">D4 · Split the monolith — one file is already painful</div>
+          <div class="tag-row"><span class="tag p2">P2 · Maintainability</span><span class="tag effort">M</span></div>
+        </div>
+        <div class="finding-body">
+          3,769 lines in one HTML works for solo velocity but punishes any second engineer. Keep the single-file ship target if desired — but split the <em>source</em> into: <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">styles.css</code>, <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">core.js</code> (storage + session), <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">risk-engine.js</code>, <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">screens/*.js</code>, concatenated at build time. This alone gives you testability on the risk engine, which today is untested.
+        </div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Add a trivial Vite or esbuild config. Ship a <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">risk-engine.test.js</code> with fixture readings so future refactors don't break scoring.</div>
+      </div>
+
+      <div class="finding p2">
+        <div class="finding-hdr">
+          <div class="finding-title">D5 · Input validation &amp; error states are thin</div>
+          <div class="tag-row"><span class="tag p2">P2 · Reliability</span><span class="tag effort">S</span></div>
+        </div>
+        <div class="finding-body">
+          The logger accepts <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">sys: 400, dia: 20, hr: 5</code> without complaint. The edit modal doesn't prevent saving empty fields. The register screen doesn't check email format. None of these crash the app, but each one erodes trust the first time a real user hits it.
+        </div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Add value-range validation (SYS 70–250, DIA 40–150, HR 30–220) with inline orange "out of plausible range — confirm?" messages. Add <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">aria-live</code> regions on the risk strip so screen readers announce changes.</div>
+      </div>
+
+      <div class="finding p2">
+        <div class="finding-hdr">
+          <div class="finding-title">D6 · Observability — you are flying blind</div>
+          <div class="tag-row"><span class="tag p2">P2 · Growth</span><span class="tag effort">S</span></div>
+        </div>
+        <div class="finding-body">
+          No analytics, no error reporting, no funnel. When the first 1,000 users arrive, you won't know whether they drop off at register, at onboarding step 3, or at the empty dashboard. Every growth decision becomes a guess.
+        </div>
+        <div class="finding-fix"><span class="fix-lbl">Fix</span>Add PostHog or Plausible (both privacy-friendly and cheap). Track: <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">register_complete, onboard_finish, first_reading, reading_logged, ai_insight_opened, pdf_exported, pro_upgrade_viewed</code>.</div>
+      </div>
+
+      <div class="finding p3">
+        <div class="finding-hdr">
+          <div class="finding-title">D7 · Accessibility &amp; i18n hygiene</div>
+          <div class="tag-row"><span class="tag p3">P3 · Reach</span><span class="tag effort">M</span></div>
+        </div>
+        <div class="finding-body">
+          No explicit <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">lang</code> switching, some icon-only buttons lack aria labels, color is the <em>only</em> signal on several states (risk borders, goal labels). At some point Hare Health ships in Spanish and German — make that cheap now by centralizing all strings in a <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">strings.js</code> dictionary.
+        </div>
+      </div>
+
+      <div class="finding p3">
+        <div class="finding-hdr">
+          <div class="finding-title">D8 · Device integration — the obvious next feature</div>
+          <div class="tag-row"><span class="tag p3">P3 · Retention</span><span class="tag effort">L</span></div>
+        </div>
+        <div class="finding-body">
+          90% of the target persona already owns a BP cuff. Apple Health and Google Fit both expose BP reads with a few lines of code (via HealthKit on a native wrapper or the Google Fit REST API on web). One-tap import removes the last source of logging friction and is the moment a casual user becomes daily-active.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 6 · AI INTEGRATION MAP
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">AI Integration Map</h2>
+    </div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:780px;line-height:1.65;">Eight places where an LLM or small model changes the product. Ranked by impact on perceived intelligence and willingness to pay. None of these replace the clinical risk engine — they sit on top of it as interpretation.</p>
+
+    <div class="ai-table">
+      <div class="ai-row head">
+        <div>#</div>
+        <div>Feature</div>
+        <div>What it does</div>
+        <div>Impact</div>
+        <div>Effort</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">01</div>
+        <div><div class="ai-name">Reading Interpreter</div><div class="ai-name-sub">On every save</div></div>
+        <div class="ai-desc">Replaces the rule-based AI Strip. Takes last 14 days + goals, returns 1 sentence of context + 1 specific action. <em>"Your systolic has drifted 6 mmHg above your 30-day average — likely tied to the two skipped walks this week. Try a 20-minute walk tonight."</em></div>
+        <div class="ai-impact impact-h">HIGH</div>
+        <div class="ai-effort">M</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">02</div>
+        <div><div class="ai-name">Doctor Report narrative</div><div class="ai-name-sub">Before PDF export</div></div>
+        <div class="ai-desc">Generates the "Key Observations" paragraph for the PDF handoff. Summarizes adherence, trend direction, and notable outliers in clinician-appropriate language. This is the feature that justifies Pro.</div>
+        <div class="ai-impact impact-h">HIGH</div>
+        <div class="ai-effort">S</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">03</div>
+        <div><div class="ai-name">Weekly Pulse email</div><div class="ai-name-sub">Sunday 8am</div></div>
+        <div class="ai-desc">The retention loop. LLM writes a friendly 3-paragraph recap: what moved, what didn't, what to try next week. Feels personal because it <em>is</em> personal.</div>
+        <div class="ai-impact impact-h">HIGH</div>
+        <div class="ai-effort">M</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">04</div>
+        <div><div class="ai-name">Ask Hare</div><div class="ai-name-sub">Chat on Profile</div></div>
+        <div class="ai-desc">"Why was my BP high on Tuesday?" / "What's a good target for my age?" / "Explain my trend." Grounded on the user's own readings + a small RAG index of BP basics. Bounded by a clear <em>"not medical advice"</em> system prompt.</div>
+        <div class="ai-impact impact-h">HIGH</div>
+        <div class="ai-effort">M</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">05</div>
+        <div><div class="ai-name">Smart reminders</div><div class="ai-name-sub">Behavior-aware</div></div>
+        <div class="ai-desc">Instead of "every day at 9am," the model picks the 1–2 times per day the user is most likely to engage based on their log history, and writes the notification copy itself.</div>
+        <div class="ai-impact impact-m">MED</div>
+        <div class="ai-effort">M</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">06</div>
+        <div><div class="ai-name">Voice logging</div><div class="ai-name-sub">Whisper + parse</div></div>
+        <div class="ai-desc"><em>"BP 128 over 82, pulse 68"</em> → Whisper → LLM parse → filled logger fields. Removes the last typing friction. Exceptional demo value.</div>
+        <div class="ai-impact impact-m">MED</div>
+        <div class="ai-effort">M</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">07</div>
+        <div><div class="ai-name">Image-to-reading</div><div class="ai-name-sub">Cuff photo OCR</div></div>
+        <div class="ai-desc">Take a photo of your BP cuff display — vision model reads the digits and pre-fills the logger. Same workflow as receipt scanning. Works for users who own older, non-connected cuffs.</div>
+        <div class="ai-impact impact-m">MED</div>
+        <div class="ai-effort">M</div>
+      </div>
+
+      <div class="ai-row">
+        <div class="ai-idx">08</div>
+        <div><div class="ai-name">Trend forecasting</div><div class="ai-name-sub">30-day projection</div></div>
+        <div class="ai-desc">Small time-series model (or a prompted LLM over last 60 days) projects the next 30 days and highlights the drivers. Gated behind Pro.</div>
+        <div class="ai-impact impact-m">MED</div>
+        <div class="ai-effort">L</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 7 · ROADMAP
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">07</span>
+      <h2 class="sec-title">Suggested 90-Day Roadmap</h2>
+    </div>
+
+    <div class="roadmap">
+      <div class="horizon">
+        <div class="horizon-hdr"><div class="horizon-num">Horizon 1</div><div class="horizon-range">Weeks 1–4</div></div>
+        <div class="horizon-title">Trust &amp; Truth</div>
+        <ul>
+          <li><strong>Hash passwords</strong> + add per-user salt. Remove plaintext storage.</li>
+          <li>Add <strong>privacy policy</strong>, terms, "not a medical device" copy on Profile.</li>
+          <li>Wire <strong>Claude Haiku</strong> into the AI Strip — replace rule-based narrative.</li>
+          <li>Add <strong>input range validation</strong> on logger &amp; edit.</li>
+          <li>Add <strong>PostHog</strong> events on register, first reading, PDF export.</li>
+          <li>Write empty-state hero copy — the first-90-seconds promise.</li>
+        </ul>
+      </div>
+
+      <div class="horizon">
+        <div class="horizon-hdr"><div class="horizon-num">Horizon 2</div><div class="horizon-range">Weeks 5–8</div></div>
+        <div class="horizon-title">Depth &amp; Sync</div>
+        <ul>
+          <li>Spin up <strong>Supabase backend</strong> — users, readings, insights tables.</li>
+          <li>Add <strong>cross-device sync</strong> with localStorage as offline cache.</li>
+          <li>Build the <strong>Doctor Report</strong> flow on the home screen.</li>
+          <li>Ship the <strong>Weekly Pulse email</strong> (cron + LLM narrative).</li>
+          <li>Refactor source into modules with a tested <code style="font-family:var(--mono);font-size:11px;color:var(--accent);">risk-engine.js</code>.</li>
+          <li>Add <strong>milestone cards</strong> &amp; streak visuals to home.</li>
+        </ul>
+      </div>
+
+      <div class="horizon">
+        <div class="horizon-hdr"><div class="horizon-num">Horizon 3</div><div class="horizon-range">Weeks 9–12</div></div>
+        <div class="horizon-title">Grow &amp; Monetize</div>
+        <ul>
+          <li>Launch <strong>Hare Health Pro</strong> — $4.99/mo, $39/yr. Stripe Billing.</li>
+          <li>Ship <strong>Ask Hare</strong> chat grounded on user data.</li>
+          <li>Add <strong>Apple Health / Google Fit</strong> import on mobile wrapper.</li>
+          <li>Ship <strong>voice logging</strong> and <strong>cuff photo OCR</strong> as Pro-only.</li>
+          <li>Add <strong>Spanish + German</strong> translations via strings dict.</li>
+          <li>Launch <strong>referral program</strong>: 1 month Pro free for every invite that logs their first reading.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 8 · THE ONE-LINE SUMMARY
+  ══════════════════════════════════════ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">08</span>
+      <h2 class="sec-title">The One-Line Summary</h2>
+    </div>
+
+    <div class="twocol">
+      <div class="callout" style="margin:0;">
+        <div class="callout-lbl">Market Exec</div>
+        <p>"You've built the most design-forward BP tracker in the category. Protect the brand, add a paid tier, make the doctor report the hero, and turn the word 'AI' into actual personalized narrative — and you have a category-defining product within 12 months."</p>
+      </div>
+      <div class="callout" style="margin:0;background:rgba(171,71,188,0.08);border-color:rgba(171,71,188,0.25);">
+        <div class="callout-lbl" style="color:var(--purple);">Senior Developer</div>
+        <p>"The MVP is tight and shippable as-is. The next 90 days are about three structural moves: hash the passwords today, put a real LLM behind the AI Strip this month, and move readings to a backend before you cross 1,000 users. Everything else can wait."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════ -->
+  <footer>
+    <div class="foot-txt">Hare Health · Product Assessment · Apr 2026</div>
+    <a href="Hare Health App.html" class="foot-link">↳ Open the live app</a>
+  </footer>
+
+</div>
+</body>
+</html>
