@@ -2438,6 +2438,46 @@ var KEYS = { users:'hh2_users', readings:'hh2_readings', prefs:'hh2_prefs', sess
 function ls_set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function ls_get(k,def){ try{ var v=localStorage.getItem(k); return v!==null ? JSON.parse(v) : def; }catch(e){ return def; } }
 
+// Escapes user-entered text before it goes into innerHTML (name/DOB/etc. in the Doctor Report).
+function escHtml(s){
+  return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+// ─────────────────────────────────────
+// PER-USER STORAGE NAMESPACING (fixes cross-account data bleed)
+// hh2_readings / hh2_prefs used to be single global buckets shared by every
+// account on the device. This scopes them per username and, once, migrates
+// whatever was in the old global bucket to the most likely owner so nobody's
+// existing readings appear to vanish.
+// ─────────────────────────────────────
+function _userNS(){
+  var u = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : ls_get(KEYS.session, null);
+  return u || '_shared';
+}
+(function migrateToPerUserStorage(){
+  if(ls_get('hh2_migrated_peruser', false)) return;
+  try{
+    var legacyReadings = ls_get(KEYS.readings, null);
+    var legacyPrefs     = ls_get(KEYS.prefs, null);
+    var users = ls_get(KEYS.users, []);
+    var target = ls_get(KEYS.lastuser, null) || ls_get(KEYS.session, null);
+    if(!target && users.length === 1) target = users[0].username;
+    if(target){
+      var rKey = KEYS.readings + '::' + target;
+      var pKey = KEYS.prefs + '::' + target;
+      if(legacyReadings && legacyReadings.length && ls_get(rKey, null) === null){
+        ls_set(rKey, legacyReadings);
+      }
+      if(legacyPrefs && ls_get(pKey, null) === null){
+        ls_set(pKey, legacyPrefs);
+      }
+    }
+  }catch(e){}
+  ls_set('hh2_migrated_peruser', true);
+})();
+
 // ─────────────────────────────────────
 // PASSWORD HASHING (Horizon 1 · D1)
 // SHA-256 + per-user salt. Fixes plaintext-in-localStorage.
@@ -2500,14 +2540,14 @@ function clearSession(){ ls_set(KEYS.session, null); }
 // ─────────────────────────────────────
 // READINGS
 // ─────────────────────────────────────
-function getReadings(){ return ls_get(KEYS.readings, []); }
-function saveReadings(r){ ls_set(KEYS.readings, r); }
+function getReadings(){ return ls_get(KEYS.readings + '::' + _userNS(), []); }
+function saveReadings(r){ ls_set(KEYS.readings + '::' + _userNS(), r); }
 
 // ─────────────────────────────────────
 // PREFS
 // ─────────────────────────────────────
-function getPrefs(){ return ls_get(KEYS.prefs, { name:'', age:'', height:'', reminders:false }); }
-function savePrefs(p){ ls_set(KEYS.prefs, p); }
+function getPrefs(){ return ls_get(KEYS.prefs + '::' + _userNS(), { name:'', age:'', height:'', reminders:false }); }
+function savePrefs(p){ ls_set(KEYS.prefs + '::' + _userNS(), p); }
 
 // ─────────────────────────────────────
 // SCREEN NAVIGATION
@@ -5246,9 +5286,9 @@ function buildDoctorReport(rangeDays){
   document.getElementById('dr-id').textContent = reportId;
   document.getElementById('dr-email').textContent = prefs.email || (firstName.toLowerCase() + '@hare.app');
   document.getElementById('dr-patient-name').textContent = fullName;
-  var pmeta = '<span>'+ageStr+'</span>';
-  if(heightIn) pmeta += '<span class="dot">·</span><span>'+heightStr+'</span>';
-  if(dobStr)   pmeta += '<span class="dot">·</span><span>DOB '+dobStr+'</span>';
+  var pmeta = '<span>'+escHtml(ageStr)+'</span>';
+  if(heightIn) pmeta += '<span class="dot">·</span><span>'+escHtml(heightStr)+'</span>';
+  if(dobStr)   pmeta += '<span class="dot">·</span><span>DOB '+escHtml(dobStr)+'</span>';
   document.getElementById('dr-patient-meta').innerHTML = pmeta;
 
   // Period block
@@ -5258,7 +5298,7 @@ function buildDoctorReport(rangeDays){
 
   // Brief copy (plain language, primary-care friendly)
   var briefParts = [];
-  briefParts.push('<strong>'+firstName+' has been tracking carefully.</strong> Over the past <strong>'+s.periodDays+' days</strong>');
+  briefParts.push('<strong>'+escHtml(firstName)+' has been tracking carefully.</strong> Over the past <strong>'+s.periodDays+' days</strong>');
   if(s.sys && s.dia){
     var sysDir = (s.sys.trend < -0.5) ? ' — within optimal range, drifting downward by <strong>' + _drFmtSigned(s.sys.trend,1) + ' mmHg</strong>'
                : (s.sys.trend > 0.5) ? ' — drifting upward by <strong>' + _drFmtSigned(s.sys.trend,1) + ' mmHg</strong>'
