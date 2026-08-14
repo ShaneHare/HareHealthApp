@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Hare Health</title>
+<meta name="description" content="Track blood pressure, heart rate and weight. Your readings stay on your device.">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0E1014" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="color-scheme" content="dark light">
+<!-- iOS ignores the manifest for home-screen installs and needs these. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hare Health">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBFMTAxNCIvPgogIDxyZWN0IHg9IjMiIHk9IjQiIHdpZHRoPSI0IiBoZWlnaHQ9IjI0IiByeD0iMiIgZmlsbD0iIzFFODhFNSIvPgogIDxyZWN0IHg9IjI1IiB5PSI0IiB3aWR0aD0iNCIgaGVpZ2h0PSIyNCIgcng9IjIiIGZpbGw9IiMxRTg4RTUiLz4KICA8cG9seWxpbmUgcG9pbnRzPSI3LDE2IDEwLDE2IDEzLDYgMTcsMjYgMjAsMTAgMjIsMTYgMjksMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFODhFNSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+">
 <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBFMTAxNCIvPgogIDxyZWN0IHg9IjMiIHk9IjQiIHdpZHRoPSI0IiBoZWlnaHQ9IjI0IiByeD0iMiIgZmlsbD0iIzFFODhFNSIvPgogIDxyZWN0IHg9IjI1IiB5PSI0IiB3aWR0aD0iNCIgaGVpZ2h0PSIyNCIgcng9IjIiIGZpbGw9IiMxRTg4RTUiLz4KICA8cG9seWxpbmUgcG9pbnRzPSI3LDE2IDEwLDE2IDEzLDYgMTcsMjYgMjAsMTAgMjIsMTYgMjksMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFODhFNSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js" crossorigin="anonymous"></script>
@@ -91,6 +101,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 /* AUTH */
 #login,#register{
   min-height:100vh;
+  min-height:100dvh;   /* iOS counts the URL bar in vh, cutting off the bottom */
   align-items:center;
   justify-content:center;
   padding:48px 24px;
@@ -654,7 +665,7 @@ body.light .hist-ctx-tag{ background:rgba(0,0,0,0.03); }
 }
 
 /* ONBOARDING */
-#onboarding{min-height:100vh;align-items:center;justify-content:center;padding:40px 24px;background:#0E1014;}
+#onboarding{min-height:100vh;min-height:100dvh;align-items:center;justify-content:center;padding:40px 24px;background:#0E1014;}
 .ob-card{width:100%;max-width:400px;}
 .ob-progress{display:flex;align-items:center;gap:6px;margin-bottom:32px;justify-content:center;}
 .ob-step{height:3px;flex:1;border-radius:2px;background:var(--border);transition:background 0.3s;}
@@ -2528,6 +2539,21 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
 <div class="toast" id="toast"></div>
 
 <script>
+// ─────────────────────────────────────
+// OFFLINE
+// Registers the service worker so the app opens without a network — the
+// readings were always local, but the page delivering them was not.
+// Guarded: opened straight from disk (file://) there is no worker to
+// register, and calling this would throw before anything else runs.
+// ─────────────────────────────────────
+if('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(err){
+      console.warn('Offline support unavailable:', err);
+    });
+  });
+}
+
 // ─────────────────────────────────────
 // STORAGE
 // ─────────────────────────────────────
