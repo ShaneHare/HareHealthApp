@@ -1422,11 +1422,11 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
 
     <!-- TRUST BADGES -->
     <div class="auth-footer">
-      <div class="sec-badge"><span class="sec-dot"></span>Encrypted</div>
+      <div class="sec-badge"><span class="sec-dot"></span>On-device</div>
       <div class="dot-sep"></div>
       <div class="sec-badge">Private</div>
       <div class="dot-sep"></div>
-      <div class="sec-badge">Secure</div>
+      <div class="sec-badge">No server</div>
     </div>
 
   </div>
@@ -1473,7 +1473,7 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
     <button class="btn-primary" onclick="doRegister()">Create Account</button>
     <button class="btn-secondary" onclick="showScreen('login')">Back to Login</button>
     <div class="auth-footer">
-      <div class="sec-badge"><span class="sec-dot"></span>Encrypted</div>
+      <div class="sec-badge"><span class="sec-dot"></span>On-device</div>
       <div class="dot-sep"></div>
       <div class="sec-badge">Private</div>
     </div>
@@ -2118,7 +2118,14 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
         <button type="button" class="settings-row" onclick="clearData()">
           <div class="s-row-left">
             <div class="s-row-icon" style="background:rgba(229,57,53,0.08)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
-            <div><div class="s-row-lbl" style="color:var(--red)">Clear All Data</div><div class="s-row-sub">Permanently delete readings</div></div>
+            <div><div class="s-row-lbl" style="color:var(--red)">Clear All Readings</div><div class="s-row-sub">Deletes readings, keeps your account</div></div>
+          </div>
+          <div class="s-row-right" style="color:var(--red)">Delete</div>
+        </button>
+        <button type="button" class="settings-row" onclick="hhDeleteAccount()">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:rgba(229,57,53,0.08)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="17" y1="8" x2="23" y2="14"/><line x1="23" y1="8" x2="17" y2="14"/></svg></div>
+            <div><div class="s-row-lbl" style="color:var(--red)">Delete Account</div><div class="s-row-sub">Removes the account and all of its data</div></div>
           </div>
           <div class="s-row-right" style="color:var(--red)">Delete</div>
         </button>
@@ -2211,14 +2218,14 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
       <div class="legal-summary-title">In 30 seconds</div>
       <p><strong>We don't have a server yet.</strong> Your readings, weight, blood pressure, and heart rate live only in your phone's browser storage.</p>
       <p><strong>We don't sell anything.</strong> No ads, no data brokers, no analytics cookies that follow you around the web.</p>
-      <p><strong>We count events, not people.</strong> We log anonymous product metrics — “someone logged a reading” — via PostHog. No names, no readings, no identifiers leave your device.</p>
-      <p><strong>You can clear everything.</strong> Profile → Data → Clear All Data wipes the entire record. No recovery, by design.</p>
+      <p><strong>We count events, not people.</strong> Anonymous usage counts — “someone logged a reading” — are kept in a local buffer on your device. Nothing is transmitted anywhere.</p>
+      <p><strong>You can delete everything.</strong> Profile → Data → Delete Account removes your readings, profile and sign-in details from this device. No recovery, by design.</p>
     </div>
-    <div class="legal-section"><h3>1. What we store</h3><p>All blood pressure, heart rate, weight, BMI, and timestamp data you enter is stored in your device's <code>localStorage</code> under the keys <code>hh2_readings</code>, <code>hh2_prefs</code>, and <code>hh2_users</code>. These keys are readable only by Hare Health running on your device.</p></div>
-    <div class="legal-section"><h3>2. What we transmit</h3><p>Product analytics events (see Section 6) are sent to PostHog Cloud with an anonymous device identifier. Welcome emails, if you provided one during signup, are sent via our transactional mail provider and deleted from our send log after 30 days.</p></div>
+    <div class="legal-section"><h3>1. What we store</h3><p>All blood pressure, heart rate, weight, BMI, and timestamp data you enter is stored in your device's <code>localStorage</code> under <code>hh2_readings::&lt;username&gt;</code> and <code>hh2_prefs::&lt;username&gt;</code>, alongside <code>hh2_users</code> (name, email, username, password hash), <code>hh2_session</code>, <code>hh2_lastuser</code>, <code>hh2_theme</code>, <code>hh2_onboarded</code> and a local usage-count buffer. This data is stored in plain text, not encrypted &mdash; anyone with access to your unlocked device can read it. Use your device's own screen lock and disk encryption.</p></div>
+    <div class="legal-section"><h3>2. What we transmit</h3><p>No health data ever leaves your device. Two things do: if you provide an email at signup, your name, username and email address are sent once to EmailJS to deliver a welcome message; and the app loads fonts and one script from Google Fonts and jsDelivr, which as a normal part of serving those files receive your IP address and browser details. Usage counts stay on your device and are not sent anywhere.</p></div>
     <div class="legal-section"><h3>3. What we do not store server-side</h3><p>Health readings. Names. Email addresses (beyond send-log retention). Passwords — they are hashed on your device and never transmitted. Doctor Reports — generated and rendered on-device only.</p></div>
-    <div class="legal-section"><h3>4. Third parties</h3><p>PostHog (product analytics, aggregate only). Resend or Postmark (welcome email delivery). That is the full list. We do not use Facebook, Google, Meta, TikTok, or any ad-network SDKs.</p></div>
-    <div class="legal-section"><h3>5. Your rights</h3><p>You can export your data as a Doctor Report PDF at any time. You can delete everything from Profile → Clear All Data. There is no account to “close” because there is no server-side account.</p></div>
+    <div class="legal-section"><h3>4. Third parties</h3><p>EmailJS (welcome email delivery only). Google Fonts and jsDelivr (serving fonts and one script; they see your IP address as a consequence). That is the full list. We use no analytics service, no ad-network SDKs, and no Facebook, Meta or TikTok code of any kind.</p></div>
+    <div class="legal-section"><h3>5. Your rights</h3><p>You can export your data at any time as a Doctor Report PDF, a CSV, or a full JSON backup. You can delete everything from Profile → Data → Delete Account, which removes the account and all of its data from this device. Because there is no server, we hold nothing to return or erase on your behalf &mdash; and equally, we cannot recover anything you delete.</p></div>
     <div class="legal-meta">Last updated: Apr 23, 2026 · Contact: privacy@harehealth.app</div>
   </div>
 </div>
@@ -2241,7 +2248,7 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
       <p>If you're experiencing chest pain, shortness of breath, confusion, severe headache, or fainting — <strong>stop and call emergency services</strong>. Do not consult this app.</p>
     </div>
     <div class="legal-section"><h3>Our risk score</h3><p>The Cardio Risk Index blends your recent readings against published clinical thresholds (ACC/AHA 2017 for BP, Mayo Clinic for resting HR, CDC for BMI). It is directional — it tells you whether your numbers are trending toward ranges associated with higher cardiovascular risk. It is not a diagnosis of any condition.</p></div>
-    <div class="legal-section"><h3>AI Insights</h3><p>Insights are generated by language models interpreting your own data. They can be wrong. They should never override a clinical judgment, a prescribed medication regimen, or your own symptoms.</p></div>
+    <div class="legal-section"><h3>AI Insights</h3><p>Insights are generated on your device by fixed rules comparing your readings against published ACC/AHA thresholds. No language model, and no data leaves your device. They can be wrong. They should never override a clinical judgment, a prescribed medication regimen, or your own symptoms.</p></div>
     <div class="legal-section"><h3>When to see a doctor</h3><p>• SYS &gt; 180 or DIA &gt; 120 (hypertensive crisis range) — seek care today.<br>• Resting HR &gt; 120 or &lt; 40 with symptoms.<br>• Any reading that surprises you alongside how you feel.</p></div>
     <div class="legal-meta">Version 1.3.0 · This disclaimer is binding on all use of Hare Health.</div>
   </div>
@@ -2617,6 +2624,12 @@ function _userNS(){
       if(legacyPrefs && ls_get(pKey, null) === null){
         ls_set(pKey, legacyPrefs);
       }
+    }
+    // Remove the legacy globals once copied, otherwise they linger forever:
+    // invisible to the UI, untouched by deletion, inherited by the next account.
+    if(target){
+      localStorage.removeItem(KEYS.readings);
+      localStorage.removeItem(KEYS.prefs);
     }
   }catch(e){}
   ls_set('hh2_migrated_peruser', true);
@@ -4728,6 +4741,39 @@ function clearData(){
     refreshProfile();
     showToast('✓ All readings cleared');
   }
+}
+
+// Removes this account and everything belonging to it. The previous "clear"
+// only emptied the readings array, leaving name, email, password hash, goals
+// and telemetry behind — which contradicted what the privacy policy promised.
+function hhDeleteAccount(){
+  var uname = _hhActiveUsername();
+  if(!uname){ showToast('Sign in first'); return; }
+  if(!confirm('Delete the account "' + uname + '" and everything in it?\n\n'
+            + 'This removes your readings, profile, goals and sign-in details from this device. '
+            + 'It cannot be undone, and no backup is kept unless you already exported one.')) return;
+  if(!confirm('Last check — permanently delete "' + uname + '"?')) return;
+
+  try{
+    localStorage.removeItem(KEYS.readings + '::' + uname);
+    localStorage.removeItem(KEYS.prefs + '::' + uname);
+    var users = getUsers().filter(function(u){ return u.username !== uname; });
+    if(users.length) ls_set(KEYS.users, users);
+    else localStorage.removeItem(KEYS.users);        // remove, don't leave an empty shell
+    if(ls_get(KEYS.lastuser, null) === uname) localStorage.removeItem(KEYS.lastuser);
+    localStorage.removeItem('hh2_events_buffer');
+    localStorage.removeItem(KEYS.session);           // clearSession() writes null; this removes it
+    currentUser = null;
+    if(!users.length){
+      // Last account gone: drop device-level leftovers too, so "delete
+      // everything" is literally true rather than nearly true.
+      ['hh2_onboarded','hh2_migrated_peruser','hh2_rec_throttle','hh2_theme',
+       KEYS.readings, KEYS.prefs].forEach(function(k){ localStorage.removeItem(k); });
+    }
+  }catch(e){}
+
+  alert('Account deleted. Everything belonging to it has been removed from this device.');
+  location.reload();
 }
 
 // ─────────────────────────────────────
