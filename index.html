@@ -1407,6 +1407,7 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
     <button class="btn-primary" onclick="doLogin()">Log In</button>
     <p class="auth-trust">Your data. Your control.</p>
     <button class="btn-secondary" onclick="showScreen('register')">Create Account</button>
+    <button class="forgot-link" style="display:block;margin:16px auto 0;" onclick="hhPickRestoreFile()">Restore from a backup file</button>
 
     <div id="login-remembered"></div>
 
@@ -2114,6 +2115,28 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
         </button>
       </div>
     </div>
+
+    <!-- Backup & Transfer — the app is device-local, so this is how data moves -->
+    <div>
+      <p class="settings-group-lbl">Backup &amp; Transfer</p>
+      <div class="settings-group">
+        <button type="button" class="settings-row" onclick="hhExportBackup()">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--gdim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+            <div><div class="s-row-lbl">Create Backup</div><div class="s-row-sub">Save account &amp; readings to a file</div></div>
+          </div>
+          <div class="s-row-right">Export &rarr;</div>
+        </button>
+        <button type="button" class="settings-row" onclick="hhPickRestoreFile()">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+            <div><div class="s-row-lbl">Restore from Backup</div><div class="s-row-sub">Load a backup onto this device</div></div>
+          </div>
+          <div class="s-row-right">Import &rarr;</div>
+        </button>
+      </div>
+      <p style="font-size:11.5px;line-height:1.5;color:#8B919C;margin:8px 4px 0;">Readings are stored in this browser only. Back up before switching phones or clearing site data &mdash; a backup restores your account and history on any device.</p>
+    </div>
     <div>
       <p class="settings-group-lbl">Performance Goals</p>
       <div class="settings-group">
@@ -2438,6 +2461,7 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
   </svg>
 </button>
 
+<input type="file" id="hh-restore-file" accept=".json,application/json" style="display:none" onchange="hhRestoreFileChosen(this)">
 <div class="toast" id="toast"></div>
 
 <script>
@@ -3999,6 +4023,178 @@ function exportCSV(days){
   document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
   showToast('✓ Exported ' + all.length + ' reading' + (all.length===1?'':'s'));
+}
+
+// ────────────────────
+// BACKUP & TRANSFER
+// Hare Health is entirely client-side: accounts and readings live in this
+// browser's localStorage and nowhere else. Without this, an account created
+// on a laptop simply does not exist on a phone. A backup file is the transport.
+// ────────────────────
+var HH_BACKUP_FORMAT  = 'hare-health-backup';
+var HH_BACKUP_VERSION = 1;
+
+function _hhActiveUsername(){
+  return (typeof currentUser !== 'undefined' && currentUser && currentUser.username)
+    ? currentUser.username
+    : ls_get(KEYS.session, null);
+}
+
+async function hhExportBackup(){
+  var uname = _hhActiveUsername();
+  if(!uname){ showToast('Sign in first to back up your account'); return; }
+
+  var users = ls_get(KEYS.users, []) || [];
+  var acct  = null;
+  for(var i=0;i<users.length;i++){ if(users[i].username === uname){ acct = users[i]; break; } }
+  if(!acct){ showToast('Could not find your account record'); return; }
+
+  // A backup must never carry a plaintext password. Legacy records are hashed
+  // on the way out and upgraded in storage at the same time.
+  var out = {};
+  for(var k in acct){ if(Object.prototype.hasOwnProperty.call(acct, k)) out[k] = acct[k]; }
+  if(out.password){
+    try{
+      var salt = hhMakeSalt();
+      out.passSalt = await Promise.resolve(salt);
+      out.passHash = await hhHashPassword(out.password, salt);
+      out.passAlgo = 'sha256-v1';
+      delete out.password;
+      for(var j=0;j<users.length;j++){
+        if(users[j].username === uname){
+          users[j].passSalt = out.passSalt; users[j].passHash = out.passHash;
+          users[j].passAlgo = out.passAlgo; delete users[j].password;
+          break;
+        }
+      }
+      ls_set(KEYS.users, users);
+    }catch(e){
+      showToast('Could not secure the backup — export cancelled');
+      return;
+    }
+  }
+
+  var readings = ls_get(KEYS.readings + '::' + uname, []) || [];
+  var prefs    = ls_get(KEYS.prefs + '::' + uname, null);
+
+  var payload = {
+    format: HH_BACKUP_FORMAT,
+    version: HH_BACKUP_VERSION,
+    exportedAt: new Date().toISOString(),
+    app: 'Hare Health',
+    account: out,
+    prefs: prefs,
+    readings: readings
+  };
+
+  var blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url;
+  a.download = 'hare-health-backup-'
+             + String(uname).replace(/[^A-Za-z0-9._-]/g, '_')
+             + '-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+
+  showToast('✓ Backup saved · ' + readings.length + ' reading' + (readings.length===1?'':'s'));
+}
+
+function hhPickRestoreFile(){
+  var input = document.getElementById('hh-restore-file');
+  if(!input){ showToast('Restore is unavailable on this device'); return; }
+  input.value = '';
+  input.click();
+}
+
+function hhRestoreFileChosen(input){
+  var file = input && input.files && input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload  = function(){ hhImportBackup(String(reader.result)); };
+  reader.onerror = function(){ showToast('Could not read that file'); };
+  reader.readAsText(file);
+}
+
+function hhImportBackup(text){
+  var data;
+  try{ data = JSON.parse(text); }
+  catch(e){ alert('That file could not be read as a Hare Health backup.'); return; }
+
+  if(!data || data.format !== HH_BACKUP_FORMAT || !data.account || !data.account.username){
+    alert('That is not a Hare Health backup file.');
+    return;
+  }
+  if(Number(data.version) > HH_BACKUP_VERSION){
+    alert('That backup was created by a newer version of Hare Health. Update the app, then try again.');
+    return;
+  }
+
+  var uname    = data.account.username;
+  var incoming = Array.isArray(data.readings) ? data.readings : [];
+
+  var users  = ls_get(KEYS.users, []) || [];
+  var exists = false;
+  for(var i=0;i<users.length;i++){ if(users[i].username === uname){ exists = true; break; } }
+
+  var rKey     = KEYS.readings + '::' + uname;
+  var pKey     = KEYS.prefs + '::' + uname;
+  var existing = ls_get(rKey, []) || [];
+
+  // Merge on timestamp: restoring twice, or onto a device that already holds
+  // readings, must never duplicate rows or discard local ones.
+  var seen = {}, merged = [];
+  existing.concat(incoming).forEach(function(r){
+    if(!r || r.ts === undefined || r.ts === null) return;
+    var key = String(r.ts);
+    if(seen[key]) return;
+    seen[key] = true;
+    merged.push(r);
+  });
+  merged.sort(function(a,b){ return a.ts - b.ts; });
+
+  var added = merged.length - existing.length;
+  var span  = '';
+  var stamps = incoming.map(function(r){ return r && r.ts; }).filter(function(t){ return !!t; });
+  if(stamps.length){
+    span = '\nCovering ' + new Date(Math.min.apply(null, stamps)).toLocaleDateString()
+         + ' – ' + new Date(Math.max.apply(null, stamps)).toLocaleDateString();
+  }
+
+  var msg = 'Restore this backup?\n\nAccount: ' + uname
+          + '\nReadings in file: ' + incoming.length
+          + '\nNew to this device: ' + (added > 0 ? added : 0)
+          + span + '\n\n'
+          + (exists
+              ? 'This account already exists here. Its current password is kept and the readings are merged.'
+              : 'The account will be created on this device — sign in with the same username and password you already use.');
+
+  if(!confirm(msg)) return;
+
+  if(!exists){
+    var rec = {};
+    for(var k in data.account){ if(Object.prototype.hasOwnProperty.call(data.account, k)) rec[k] = data.account[k]; }
+    delete rec.password;              // defence in depth
+    users.push(rec);
+    ls_set(KEYS.users, users);
+  }
+
+  ls_set(rKey, merged);
+  if(data.prefs) ls_set(pKey, data.prefs);
+
+  // Stop the one-time per-user migration shim from later overwriting this.
+  ls_set('hh2_migrated_peruser', true);
+
+  var signedInAsThem = (_hhActiveUsername() === uname);
+  if(!signedInAsThem){
+    alert('Restored ' + merged.length + ' reading' + (merged.length===1?'':'s')
+        + ' for "' + uname + '".\n\nSign in as ' + uname + ' to view them.');
+  }else{
+    showToast('✓ Restored · ' + merged.length + ' reading' + (merged.length===1?'':'s'));
+  }
+  setTimeout(function(){ location.reload(); }, signedInAsThem ? 900 : 0);
 }
 
 // ─────────────────────────────────────
