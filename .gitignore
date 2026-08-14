@@ -9,3 +9,6 @@
 
 # Misc
 Thumbs.db
+
+# Scratch folder for files pending manual deletion — never commit this
+_to_delete/
