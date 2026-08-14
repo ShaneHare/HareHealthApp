@@ -2610,8 +2610,10 @@ function hhSanitizeAccount(a){
   ['passHash','passSalt','recHash','recSalt'].forEach(function(k){
     if(typeof a[k] === 'string' && /^[0-9a-f]{1,256}$/i.test(a[k])) out[k] = a[k];
   });
-  if(a.passAlgo === 'sha256-v1') out.passAlgo = 'sha256-v1';
+  if(a.passAlgo === 'sha256-v1' || a.passAlgo === 'pbkdf2-sha256-v2') out.passAlgo = a.passAlgo;
   if(a.recAlgo  === 'sha256-v1') out.recAlgo  = 'sha256-v1';
+  var it = Number(a.passIters);
+  if(isFinite(it) && it > 0 && it <= 5000000) out.passIters = Math.floor(it);
   return out;
 }
 
@@ -2658,11 +2660,50 @@ function _userNS(){
 // PASSWORD HASHING (Horizon 1 · D1)
 // SHA-256 + per-user salt. Fixes plaintext-in-localStorage.
 // ─────────────────────────────────────
+// Legacy: single-round SHA-256. Retained only to verify old records so they
+// can be upgraded on next sign-in. Never used for new secrets.
 async function hhHashPassword(pw, salt){
   var enc = new TextEncoder();
   var data = enc.encode(salt + ':' + pw);
   var buf = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+// Current: PBKDF2-SHA256. SHA-256 alone is a *fast* hash — a GPU tries
+// billions per second, so a salted single round barely slows an offline
+// attack on a leaked backup file. Key stretching is what makes guessing
+// expensive. 310,000 iterations is the OWASP figure for PBKDF2-SHA256.
+var HH_PBKDF2_ITERS = 310000;
+
+async function hhHashPasswordV2(pw, saltHex, iters){
+  var enc  = new TextEncoder();
+  var key  = await crypto.subtle.importKey('raw', enc.encode(String(pw)), 'PBKDF2', false, ['deriveBits']);
+  var salt = new Uint8Array((saltHex.match(/../g) || []).map(function(h){ return parseInt(h, 16); }));
+  var bits = await crypto.subtle.deriveBits(
+    { name:'PBKDF2', salt: salt, iterations: iters || HH_PBKDF2_ITERS, hash:'SHA-256' },
+    key, 256);
+  return Array.from(new Uint8Array(bits)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+// Writes a fresh PBKDF2 credential onto a user record (mutates it).
+async function hhSetPassword(userRec, pw){
+  var salt = hhMakeSalt();
+  userRec.passSalt  = salt;
+  userRec.passHash  = await hhHashPasswordV2(pw, salt, HH_PBKDF2_ITERS);
+  userRec.passAlgo  = 'pbkdf2-sha256-v2';
+  userRec.passIters = HH_PBKDF2_ITERS;
+  delete userRec.password;
+  return userRec;
+}
+
+// Constant-time-ish comparison. Not a real defence in JS, but it costs
+// nothing and avoids an obvious early-exit on the first differing character.
+function hhSafeEqual(a, b){
+  a = String(a || ''); b = String(b || '');
+  if(a.length !== b.length) return false;
+  var diff = 0;
+  for(var i=0;i<a.length;i++) diff |= (a.charCodeAt(i) ^ b.charCodeAt(i));
+  return diff === 0;
 }
 function hhMakeSalt(){
   var b = new Uint8Array(16);
@@ -2704,6 +2745,10 @@ async function hhAttachRecoveryCode(userRec){
   return code;
 }
 
+// Recovery codes stay on the fast hash deliberately: 60 bits of uniform
+// randomness is not guessable at any hash speed, so key stretching would buy
+// nothing and only slow the reset screen. Passwords are different — they are
+// human-chosen and low-entropy, which is why those use PBKDF2.
 async function hhVerifyRecoveryCode(user, code){
   if(!user || !user.recHash || !user.recSalt) return false;
   var h = await hhHashPassword(hhNormalizeCode(code), user.recSalt);
@@ -2780,23 +2825,34 @@ async function hhRegenerateRecoveryCode(){
 }
 
 // Verifies pw against user record. Silently migrates legacy plaintext records.
+// Persists whatever upgrade just happened to `user` back into storage.
+function _hhPersistUser(user){
+  var all = ls_get(KEYS.users, []);
+  for(var i=0;i<all.length;i++){ if(all[i].username === user.username){ all[i] = user; break; } }
+  ls_set(KEYS.users, all);
+}
+
 async function hhVerifyPassword(user, pw){
-  if(user.passHash && user.passSalt){
-    var h = await hhHashPassword(pw, user.passSalt);
-    return h === user.passHash;
+  // Current format.
+  if(user.passAlgo === 'pbkdf2-sha256-v2' && user.passHash && user.passSalt){
+    var h2 = await hhHashPasswordV2(pw, user.passSalt, user.passIters || HH_PBKDF2_ITERS);
+    return hhSafeEqual(h2, user.passHash);
   }
-  // Legacy path: plaintext .password field
+
+  // Legacy single-round SHA-256: verify with the old scheme, then silently
+  // re-hash with PBKDF2 so the weak digest stops existing.
+  if(user.passHash && user.passSalt){
+    var h1 = await hhHashPassword(pw, user.passSalt);
+    if(!hhSafeEqual(h1, user.passHash)) return false;
+    await hhSetPassword(user, pw);
+    _hhPersistUser(user);
+    return true;
+  }
+
+  // Oldest: plaintext in localStorage.
   if(user.password && user.password === pw){
-    // Migrate in place
-    var salt = hhMakeSalt();
-    var hash = await hhHashPassword(pw, salt);
-    user.passSalt = salt;
-    user.passHash = hash;
-    user.passAlgo = 'sha256-v1';
-    delete user.password;
-    var all = ls_get(KEYS.users, []);
-    for(var i=0;i<all.length;i++){ if(all[i].username === user.username){ all[i] = user; break; } }
-    ls_set(KEYS.users, all);
+    await hhSetPassword(user, pw);
+    _hhPersistUser(user);
     return true;
   }
   return false;
@@ -2978,9 +3034,8 @@ async function doRegister(){
     }
   }
 
-  var _salt = hhMakeSalt();
-  var _hash = await hhHashPassword(pass, _salt);
-  var newUser = { username:user, name:name, email:email, passSalt:_salt, passHash:_hash, passAlgo:'sha256-v1' };
+  var newUser = { username:user, name:name, email:email };
+  await hhSetPassword(newUser, pass);
   var _recCode = await hhAttachRecoveryCode(newUser);
   users.push(newUser);
   ls_set(KEYS.users, users);
@@ -3174,17 +3229,12 @@ async function recResetPassword(){
   if(pass !== conf){
     errEl.innerHTML = '<p class="form-err">Passwords do not match</p>'; return;
   }
-  // Update password in storage (hashed)
-  var _salt2 = hhMakeSalt();
-  var _hash2 = await hhHashPassword(pass, _salt2);
+  // Update password in storage (PBKDF2)
   var users = getUsers();
   var newCode = null;
   for(var i=0; i<users.length; i++){
     if(users[i].username === _recUsername){
-      users[i].passSalt = _salt2;
-      users[i].passHash = _hash2;
-      users[i].passAlgo = 'sha256-v1';
-      delete users[i].password;
+      await hhSetPassword(users[i], pass);
       // Burn the used code and issue a replacement, so a code seen over a
       // shoulder cannot be replayed.
       newCode = await hhAttachRecoveryCode(users[i]);
