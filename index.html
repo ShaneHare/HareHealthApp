@@ -6,8 +6,14 @@
 <title>Hare Health</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBFMTAxNCIvPgogIDxyZWN0IHg9IjMiIHk9IjQiIHdpZHRoPSI0IiBoZWlnaHQ9IjI0IiByeD0iMiIgZmlsbD0iIzFFODhFNSIvPgogIDxyZWN0IHg9IjI1IiB5PSI0IiB3aWR0aD0iNCIgaGVpZ2h0PSIyNCIgcng9IjIiIGZpbGw9IiMxRTg4RTUiLz4KICA8cG9seWxpbmUgcG9pbnRzPSI3LDE2IDEwLDE2IDEzLDYgMTcsMjYgMjAsMTAgMjIsMTYgMjksMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFODhFNSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+">
 <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iIzBFMTAxNCIvPgogIDxyZWN0IHg9IjMiIHk9IjQiIHdpZHRoPSI0IiBoZWlnaHQ9IjI0IiByeD0iMiIgZmlsbD0iIzFFODhFNSIvPgogIDxyZWN0IHg9IjI1IiB5PSI0IiB3aWR0aD0iNCIgaGVpZ2h0PSIyNCIgcng9IjIiIGZpbGw9IiMxRTg4RTUiLz4KICA8cG9seWxpbmUgcG9pbnRzPSI3LDE2IDEwLDE2IDEzLDYgMTcsMjYgMjAsMTAgMjIsMTYgMjksMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFFODhFNSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script>emailjs.init("XOCu0MKDhY5RQTmhs");</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js" crossorigin="anonymous"></script>
+<script>
+/* The welcome email is a nicety; the app must work without it. If the CDN is
+   blocked, slow, or the device is offline, this script is absent and every
+   reference to it would throw — previously killing registration part-way
+   through, after the account had already been written to storage. */
+try{ if(window.emailjs) emailjs.init("XOCu0MKDhY5RQTmhs"); }catch(e){}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1397,23 +1403,25 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
     <div class="auth-divider"></div>
 
     <!-- FORM -->
-    <div id="login-form-err"></div>
+    <div id="login-form-err" role="alert"></div>
+    <form id="login-form" onsubmit="doLogin(); return false;" novalidate>
     <div class="field-group">
       <div class="field">
         <label for="f-username">Username</label>
-        <input id="f-username" type="text" placeholder="Username"
+        <input id="f-username" name="username" type="text" placeholder="Username"
           autocomplete="username" autocorrect="off" autocapitalize="none" spellcheck="false">
       </div>
       <div class="field">
         <label for="f-password">Password</label>
-        <input id="f-password" type="password" placeholder="••••••••••"
+        <input id="f-password" name="password" type="password" placeholder="••••••••••"
           autocomplete="current-password">
-        <button class="forgot-link" onclick="openRecovery('password')">Forgot password?</button>
+        <button type="button" class="forgot-link" onclick="openRecovery('password')">Forgot password?</button>
       </div>
     </div>
 
     <!-- CTA -->
-    <button class="btn-primary" onclick="doLogin()">Log In</button>
+    <button type="submit" class="btn-primary">Log In</button>
+    </form>
     <p class="auth-trust">Your data. Your control.</p>
     <button class="btn-secondary" onclick="showScreen('register')">Create Account</button>
     <button class="forgot-link" style="display:block;margin:16px auto 0;" onclick="hhPickRestoreFile()">Restore from a backup file</button>
@@ -1447,7 +1455,8 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
 </div>
     <h1 class="auth-headline">Create Your<br>Account.</h1>
     <p class="auth-tagline">Performance starts with a baseline.</p>
-    <div id="reg-form-err"></div>
+    <div id="reg-form-err" role="alert"></div>
+    <form id="register-form" onsubmit="doRegister(); return false;" novalidate>
     <div class="field-group" style="margin-top:24px;">
       <div class="field">
         <label for="r-name">Full Name</label>
@@ -1455,22 +1464,23 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
       </div>
       <div class="field">
         <label for="r-email">Email Address</label>
-        <input id="r-email" type="email" placeholder="you@email.com" autocomplete="email" autocapitalize="none">
+        <input id="r-email" name="email" type="email" placeholder="you@email.com" autocomplete="email" autocapitalize="none">
       </div>
       <div class="field">
         <label for="r-user">Username</label>
-        <input id="r-user" type="text" placeholder="Choose a username" autocomplete="username" autocorrect="off" autocapitalize="none">
+        <input id="r-user" name="username" type="text" placeholder="Choose a username" autocomplete="username" autocorrect="off" autocapitalize="none">
       </div>
       <div class="field">
         <label for="r-pass">Password</label>
-        <input id="r-pass" type="password" placeholder="Min 8 characters" autocomplete="new-password">
+        <input id="r-pass" name="new-password" type="password" placeholder="Min 8 characters" autocomplete="new-password">
       </div>
       <div class="field">
         <label for="r-conf">Confirm Password</label>
         <input id="r-conf" type="password" placeholder="Re-enter password" autocomplete="new-password">
       </div>
     </div>
-    <button class="btn-primary" onclick="doRegister()">Create Account</button>
+    <button type="submit" class="btn-primary">Create Account</button>
+    </form>
     <button class="btn-secondary" onclick="showScreen('login')">Back to Login</button>
     <div class="auth-footer">
       <div class="sec-badge"><span class="sec-dot"></span>On-device</div>
@@ -5506,16 +5516,19 @@ function generateLocalAnalysis(latest, recent, prefs){
 // EMAIL — Welcome on registration
 // ─────────────────────────────────────
 function sendWelcomeEmail(name, username, email){
-  if(!email) return; // skip if no email provided
-  emailjs.send('service_ds04s75', 'template_I9c385r', {
-    to_name:  name,
-    username: username,
-    to_email: email
-  }).then(function(){
-    console.log('Welcome email sent to ' + email);
-  }).catch(function(err){
-    console.warn('Email send failed:', err);
-  });
+  if(!email) return;                       // skip if no email provided
+  if(!window.emailjs) return;              // CDN unavailable — not a failure worth blocking on
+  try{
+    emailjs.send('service_ds04s75', 'template_I9c385r', {
+      to_name:  name,
+      username: username,
+      to_email: email
+    }).catch(function(err){
+      console.warn('Welcome email could not be sent:', err);
+    });
+  }catch(e){
+    console.warn('Welcome email could not be sent:', e);
+  }
 }
 
 // ─────────────────────────────────────
