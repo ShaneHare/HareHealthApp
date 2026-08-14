@@ -567,6 +567,12 @@ body.light .hist-ctx-tag{ background:rgba(0,0,0,0.03); }
 .logout-btn{display:block;width:100%;background:rgba(229,57,53,0.08);color:var(--red);border:1px solid rgba(229,57,53,0.2);border-radius:6px;padding:14px;font-family:var(--sans);font-size:14px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;}
 .logout-btn:active{background:rgba(229,57,53,0.18);}
 
+/* RECOVERY CODE */
+.reccode-box{font-family:var(--mono);font-size:19px;font-weight:600;letter-spacing:0.14em;color:#F0F2F5;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px 12px;text-align:center;margin:14px 0 10px;word-break:break-all;user-select:all;-webkit-user-select:all;}
+.reccode-warn{font-size:12px;line-height:1.55;color:var(--amber,#FF9800);background:rgba(255,152,0,0.08);border:1px solid rgba(255,152,0,0.22);border-radius:7px;padding:11px 13px;margin-bottom:14px;}
+.reccode-ack{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;line-height:1.5;color:var(--text2);margin-bottom:14px;cursor:pointer;}
+.reccode-ack input{width:17px;height:17px;flex-shrink:0;margin-top:1px;accent-color:var(--accent);}
+
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:24px 16px;}
 .modal-overlay.open{display:flex;}
@@ -2119,6 +2125,20 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
       </div>
     </div>
 
+    <div>
+      <p class="settings-group-lbl">Security</p>
+      <div class="settings-group">
+        <button type="button" class="settings-row" onclick="hhRegenerateRecoveryCode()">
+          <div class="s-row-left">
+            <div class="s-row-icon" style="background:var(--adim)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div><div class="s-row-lbl">Recovery Code</div><div class="s-row-sub" id="disp-reccode">Not set</div></div>
+          </div>
+          <div class="s-row-right">Generate &rarr;</div>
+        </button>
+      </div>
+      <p style="font-size:11.5px;line-height:1.5;color:#8B919C;margin:8px 4px 0;">Required to reset a forgotten password. Generating a new code replaces any previous one.</p>
+    </div>
+
     <!-- Backup & Transfer — the app is device-local, so this is how data moves -->
     <div>
       <p class="settings-group-lbl">Backup &amp; Transfer</p>
@@ -2340,6 +2360,22 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
   </div>
 </div>
 
+<!-- RECOVERY CODE MODAL — shown at signup, after a reset, and from Profile -->
+<div class="modal-overlay" id="reccode-modal">
+  <div class="recovery-modal" role="dialog" aria-modal="true" aria-labelledby="reccode-title">
+    <div class="modal-handle"></div>
+    <p class="recovery-title" id="reccode-title">Your Recovery Code</p>
+    <p class="recovery-sub" id="reccode-sub">This is the only way to reset your password. Save it somewhere safe now &mdash; it will not be shown again.</p>
+    <div class="reccode-box" id="reccode-value">&mdash;</div>
+    <div class="reccode-warn">There is no server behind this app, so nobody can recover your account for you. Without this code a forgotten password means starting over. A backup file is your other safety net.</div>
+    <label class="reccode-ack"><input type="checkbox" id="reccode-ack-box" onchange="hhReccodeAckChanged()"><span>I have saved my recovery code</span></label>
+    <div class="recovery-actions">
+      <button type="button" class="btn-secondary" onclick="hhCopyRecoveryCode()">Copy</button>
+      <button type="button" class="btn-primary" id="reccode-done" disabled onclick="hhReccodeDone()">Continue</button>
+    </div>
+  </div>
+</div>
+
 <!-- RECOVERY MODAL -->
 <div class="modal-overlay" id="recovery-modal" onclick="bgClose(event,'recovery-modal')">
   <div class="recovery-modal">
@@ -2348,10 +2384,14 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
     <!-- Step 1: Choose recovery type -->
     <div class="recovery-step active" id="rec-step-1">
       <p class="recovery-title" id="rec-title">Account Recovery</p>
-      <p class="recovery-sub">Enter your username to verify your account,<br>then set a new password.</p>
+      <p class="recovery-sub">Enter your username and the recovery code you saved when you created the account.</p>
       <div class="recovery-field">
-        <label>Username</label>
+        <label for="rec-username">Username</label>
         <input id="rec-username" type="text" placeholder="Your username" autocorrect="off" autocapitalize="none">
+      </div>
+      <div class="recovery-field">
+        <label for="rec-code">Recovery code</label>
+        <input id="rec-code" type="text" placeholder="XXXX-XXXX-XXXX" autocorrect="off" autocapitalize="characters" spellcheck="false">
       </div>
       <div id="rec-err" style="margin-bottom:12px;"></div>
       <div class="recovery-actions">
@@ -2531,6 +2571,116 @@ function hhMakeSalt(){
   crypto.getRandomValues(b);
   return Array.from(b).map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
 }
+// ─────────────────────────────────────
+// RECOVERY CODES
+// With no server, "forgot password" cannot be gated on an email a stranger
+// doesn't control. It is gated on a high-entropy code issued at signup and
+// stored only as a hash — so possession of the device is not enough.
+// ─────────────────────────────────────
+// Ambiguous glyphs (0/O, 1/I/L) omitted so the code can be read off paper.
+var HH_RC_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+function hhMakeRecoveryCode(){
+  var bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+  var out = '';
+  for(var i=0;i<12;i++){
+    if(i && i % 4 === 0) out += '-';
+    out += HH_RC_ALPHABET.charAt(bytes[i] % HH_RC_ALPHABET.length);
+  }
+  return out;                              // ~59 bits of entropy
+}
+
+function hhNormalizeCode(s){
+  return String(s || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+}
+
+// Attach a fresh code to a user record (mutates it) and return the plaintext
+// exactly once — only the hash is ever persisted.
+async function hhAttachRecoveryCode(userRec){
+  var code = hhMakeRecoveryCode();
+  var salt = hhMakeSalt();
+  userRec.recSalt = salt;
+  userRec.recHash = await hhHashPassword(hhNormalizeCode(code), salt);
+  userRec.recAlgo = 'sha256-v1';
+  return code;
+}
+
+async function hhVerifyRecoveryCode(user, code){
+  if(!user || !user.recHash || !user.recSalt) return false;
+  var h = await hhHashPassword(hhNormalizeCode(code), user.recSalt);
+  return h === user.recHash;
+}
+
+// Throttle. A determined attacker with devtools can clear this; it exists to
+// stop casual and scripted guessing, which is the realistic threat here.
+function _hhRecThrottle(){
+  var t = ls_get('hh2_rec_throttle', { fails:0, until:0 });
+  return (t && typeof t === 'object') ? t : { fails:0, until:0 };
+}
+function _hhRecBlockedFor(){
+  var t = _hhRecThrottle();
+  var left = (t.until || 0) - Date.now();
+  return left > 0 ? Math.ceil(left / 1000) : 0;
+}
+function _hhRecFail(){
+  var t = _hhRecThrottle();
+  t.fails = (t.fails || 0) + 1;
+  if(t.fails >= 5) t.until = Date.now() + Math.min(15 * 60000, 30000 * Math.pow(2, t.fails - 5));
+  ls_set('hh2_rec_throttle', t);
+}
+function _hhRecReset(){ ls_set('hh2_rec_throttle', { fails:0, until:0 }); }
+
+// ── Recovery-code modal ──
+var _reccodePending = null;
+
+function hhShowRecoveryCode(code, subtitle, onDone){
+  _reccodePending = onDone || null;
+  document.getElementById('reccode-value').textContent = code;
+  if(subtitle) document.getElementById('reccode-sub').textContent = subtitle;
+  var ack = document.getElementById('reccode-ack-box');
+  ack.checked = false;
+  document.getElementById('reccode-done').disabled = true;
+  document.getElementById('reccode-modal').classList.add('open');
+}
+function hhReccodeAckChanged(){
+  document.getElementById('reccode-done').disabled = !document.getElementById('reccode-ack-box').checked;
+}
+function hhCopyRecoveryCode(){
+  var code = document.getElementById('reccode-value').textContent;
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(code).then(function(){ showToast('✓ Code copied'); },
+                                              function(){ showToast('Copy failed — write it down'); });
+      return;
+    }
+  }catch(e){}
+  showToast('Copy unavailable — write it down');
+}
+function hhReccodeDone(){
+  document.getElementById('reccode-modal').classList.remove('open');
+  var cb = _reccodePending; _reccodePending = null;
+  if(typeof cb === 'function') cb();
+}
+
+// Generate/replace a code for the signed-in user (already authenticated).
+async function hhRegenerateRecoveryCode(){
+  var uname = _hhActiveUsername();
+  if(!uname){ showToast('Sign in first'); return; }
+  var users = getUsers(), rec = null;
+  for(var i=0;i<users.length;i++){ if(users[i].username === uname){ rec = users[i]; break; } }
+  if(!rec){ showToast('Could not find your account'); return; }
+  if(rec.recHash && !confirm('Generate a new recovery code?\n\nYour existing code will stop working immediately.')) return;
+  var code = await hhAttachRecoveryCode(rec);
+  ls_set(KEYS.users, users);
+  if(currentUser && currentUser.username === uname){
+    currentUser.recSalt = rec.recSalt; currentUser.recHash = rec.recHash; currentUser.recAlgo = rec.recAlgo;
+  }
+  hhShowRecoveryCode(code, 'Save this somewhere safe. It replaces any previous code and will not be shown again.', function(){
+    try{ refreshProfile(); }catch(e){}
+  });
+}
+
 // Verifies pw against user record. Silently migrates legacy plaintext records.
 async function hhVerifyPassword(user, pw){
   if(user.passHash && user.passSalt){
@@ -2733,6 +2883,7 @@ async function doRegister(){
   var _salt = hhMakeSalt();
   var _hash = await hhHashPassword(pass, _salt);
   var newUser = { username:user, name:name, email:email, passSalt:_salt, passHash:_hash, passAlgo:'sha256-v1' };
+  var _recCode = await hhAttachRecoveryCode(newUser);
   users.push(newUser);
   ls_set(KEYS.users, users);
 
@@ -2749,8 +2900,10 @@ async function doRegister(){
   sendWelcomeEmail(name, user, email);
 
   hh_track('register_success', {});
-  showScreen('onboarding');
-  obInit();
+  hhShowRecoveryCode(_recCode, 'This is the only way to reset your password. Save it somewhere safe now — it will not be shown again.', function(){
+    showScreen('onboarding');
+    obInit();
+  });
 }
 
 // ─────────────────────────────────────
@@ -2865,20 +3018,41 @@ function openRecovery(type){
   setTimeout(function(){ document.getElementById('rec-username').focus(); }, 80);
 }
 
-function recVerifyUser(){
+async function recVerifyUser(){
   var uname  = document.getElementById('rec-username').value.trim();
+  var code   = document.getElementById('rec-code').value.trim();
   var errEl  = document.getElementById('rec-err');
   errEl.innerHTML = '';
-  if(!uname){ errEl.innerHTML = '<p class="form-err">Please enter your username</p>'; return; }
+
+  var wait = _hhRecBlockedFor();
+  if(wait){
+    errEl.innerHTML = '<p class="form-err">Too many attempts. Try again in ' + wait + 's.</p>';
+    return;
+  }
+  if(!uname || !code){
+    errEl.innerHTML = '<p class="form-err">Enter your username and recovery code</p>'; return;
+  }
+
   var users = getUsers();
   var match = null;
   for(var i=0; i<users.length; i++){
     if(users[i].username.toLowerCase() === uname.toLowerCase()){ match = users[i]; break; }
   }
-  if(!match){
-    errEl.innerHTML = '<p class="form-err">Username not found</p>';
+
+  // Deliberately identical response for "no such user" and "wrong code", so
+  // this screen cannot be used to enumerate which usernames exist.
+  var ok = match ? await hhVerifyRecoveryCode(match, code) : false;
+  if(!ok){
+    if(match && !match.recHash){
+      errEl.innerHTML = '<p class="form-err">This account has no recovery code. Sign in and set one under Profile &rarr; Security, or restore from a backup file.</p>';
+      return;
+    }
+    _hhRecFail();
+    errEl.innerHTML = '<p class="form-err">Username or recovery code is incorrect</p>';
     return;
   }
+
+  _hhRecReset();
   _recUsername = match.username;
   document.getElementById('rec-step2-sub').textContent = 'Set a new password for ' + _recUsername + '.';
   document.getElementById('rec-step-1').classList.remove('active');
@@ -2906,18 +3080,25 @@ async function recResetPassword(){
   var _salt2 = hhMakeSalt();
   var _hash2 = await hhHashPassword(pass, _salt2);
   var users = getUsers();
+  var newCode = null;
   for(var i=0; i<users.length; i++){
     if(users[i].username === _recUsername){
       users[i].passSalt = _salt2;
       users[i].passHash = _hash2;
       users[i].passAlgo = 'sha256-v1';
       delete users[i].password;
+      // Burn the used code and issue a replacement, so a code seen over a
+      // shoulder cannot be replayed.
+      newCode = await hhAttachRecoveryCode(users[i]);
       break;
     }
   }
   ls_set(KEYS.users, users);
   document.getElementById('rec-step-2').classList.remove('active');
   document.getElementById('rec-step-3').classList.add('active');
+  if(newCode){
+    hhShowRecoveryCode(newCode, 'Your password was reset, so your old recovery code no longer works. Save this new one.', null);
+  }
 }
 
 // ─────────────────────────────────────
@@ -4379,6 +4560,12 @@ function refreshProfile(){
   document.getElementById('disp-age').textContent        = prefs.age    ? prefs.age + ' years' : 'Not set';
   document.getElementById('disp-height').textContent     = prefs.height || 'Not set';
   document.getElementById('disp-count').textContent      = readings.length + ' reading' + (readings.length !== 1 ? 's' : '');
+  var _rcEl = document.getElementById('disp-reccode');
+  if(_rcEl){
+    var _rcUser = null, _rcAll = getUsers(), _rcName = _hhActiveUsername();
+    for(var _ri=0;_ri<_rcAll.length;_ri++){ if(_rcAll[_ri].username === _rcName){ _rcUser = _rcAll[_ri]; break; } }
+    _rcEl.textContent = (_rcUser && _rcUser.recHash) ? 'Set — keep it somewhere safe' : 'Not set — reset unavailable';
+  }
   document.getElementById('disp-goal-hr').textContent = prefs.goal_hr ? prefs.goal_hr + ' bpm target'  : 'Not set';
   document.getElementById('disp-goal-bp').textContent = prefs.goal_bp ? prefs.goal_bp + ' mmHg target' : 'Not set';
   document.getElementById('disp-goal-wt').textContent = prefs.goal_wt ? prefs.goal_wt + ' lbs target'  : 'Not set';
