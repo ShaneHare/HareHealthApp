@@ -2524,6 +2524,72 @@ function escHtml(s){
 }
 
 // ─────────────────────────────────────
+// UNTRUSTED-INPUT SANITISERS
+// A restored backup is a file from outside the app. Everything in it is
+// attacker-controlled until proven otherwise, so it is whitelisted and
+// coerced at the boundary rather than trusted downstream.
+// ─────────────────────────────────────
+var HH_POSTURES = { sitting:1, standing:1, lying:1 };
+var HH_TODS     = { morning:1, afternoon:1, evening:1 };
+
+function _hhNum(v, min, max){
+  if(v === null || v === undefined || v === '') return null;
+  var n = Number(v);
+  if(!isFinite(n)) return null;
+  if(min !== undefined && n < min) return null;
+  if(max !== undefined && n > max) return null;
+  return n;
+}
+
+// Returns a clean reading built only from known keys, or null to drop it.
+function hhSanitizeReading(r){
+  if(!r || typeof r !== 'object' || Array.isArray(r)) return null;
+  var ts = Number(r.ts);
+  if(!isFinite(ts) || ts <= 0) return null;          // ts also lands in HTML attributes
+  var out = { ts: Math.floor(ts) };
+  out.sys = _hhNum(r.sys, 0, 400);
+  out.dia = _hhNum(r.dia, 0, 300);
+  out.hr  = _hhNum(r.hr,  0, 400);
+  out.wt  = _hhNum(r.wt,  0, 2000);
+  if(typeof r.posture === 'string' && HH_POSTURES[r.posture]) out.posture = r.posture;
+  if(typeof r.tod     === 'string' && HH_TODS[r.tod])         out.tod     = r.tod;
+  if(r.note !== undefined && r.note !== null) out.note = String(r.note).slice(0, 500);
+  if(out.sys === null && out.dia === null && out.hr === null && out.wt === null) return null;
+  return out;
+}
+
+function hhSanitizePrefs(p){
+  if(!p || typeof p !== 'object' || Array.isArray(p)) return null;
+  var out = {};
+  ['name','age','height','email'].forEach(function(k){
+    if(p[k] !== undefined && p[k] !== null) out[k] = String(p[k]).slice(0, 120);
+  });
+  ['goal_hr','goal_bp','goal_wt','goal_sys','goal_dia'].forEach(function(k){
+    var n = _hhNum(p[k], 0, 1000);
+    if(n !== null) out[k] = n;
+  });
+  out.reminders = !!p.reminders;
+  return out;
+}
+
+// Account records from a backup: only the fields the app actually reads.
+function hhSanitizeAccount(a){
+  if(!a || typeof a !== 'object' || typeof a.username !== 'string') return null;
+  var uname = a.username.trim().slice(0, 60);
+  if(!uname || !/^[^\s<>&"']+$/.test(uname)) return null;
+  var out = { username: uname };
+  ['name','email'].forEach(function(k){
+    if(typeof a[k] === 'string') out[k] = a[k].slice(0, 120);
+  });
+  ['passHash','passSalt','recHash','recSalt'].forEach(function(k){
+    if(typeof a[k] === 'string' && /^[0-9a-f]{1,256}$/i.test(a[k])) out[k] = a[k];
+  });
+  if(a.passAlgo === 'sha256-v1') out.passAlgo = 'sha256-v1';
+  if(a.recAlgo  === 'sha256-v1') out.recAlgo  = 'sha256-v1';
+  return out;
+}
+
+// ─────────────────────────────────────
 // PER-USER STORAGE NAMESPACING (fixes cross-account data bleed)
 // hh2_readings / hh2_prefs used to be single global buckets shared by every
 // account on the device. This scopes them per username and, once, migrates
@@ -4025,7 +4091,7 @@ function refreshHistory(){
         '<div>'+
           '<div class="hist-val-lbl">Heart Rate</div>'+
           '<div class="hist-val-row">'+
-            '<span class="hist-val-num">'+(r.hr||'—')+'</span>'+
+            '<span class="hist-val-num">'+escHtml(r.hr||'—')+'</span>'+
             '<span class="hist-val-unit">'+(r.hr?' bpm':'')+'</span>'+
             hrDelta+
           '</div>'+
@@ -4033,7 +4099,7 @@ function refreshHistory(){
         '<div>'+
           '<div class="hist-val-lbl">Blood Pressure</div>'+
           '<div class="hist-val-row">'+
-            '<span class="hist-val-num">'+(r.sys?(r.sys+'/'+(r.dia||'—')):'—')+'</span>'+
+            '<span class="hist-val-num">'+escHtml(r.sys?(r.sys+'/'+(r.dia||'—')):'—')+'</span>'+
             '<span class="hist-val-unit">'+(r.sys?' mmHg':'')+'</span>'+
             sysDelta+
           '</div>'+
@@ -4054,8 +4120,8 @@ function refreshHistory(){
         '</div>'+
         '<div class="hist-detail-insight">'+insight+'</div>'+
         '<div class="hist-detail-actions">'+
-          '<button class="hist-edit-btn" data-ts="'+r.ts+'">Edit Reading</button>'+
-          '<button class="hist-delete-btn" data-ts="'+r.ts+'">Delete</button>'+
+          '<button class="hist-edit-btn" data-ts="'+Number(r.ts)+'">Edit Reading</button>'+
+          '<button class="hist-delete-btn" data-ts="'+Number(r.ts)+'">Delete</button>'+
         '</div>'+
       '</div>';
 
@@ -4316,8 +4382,21 @@ function hhImportBackup(text){
     return;
   }
 
-  var uname    = data.account.username;
-  var incoming = Array.isArray(data.readings) ? data.readings : [];
+  var account = hhSanitizeAccount(data.account);
+  if(!account){
+    alert('That backup file has an unreadable account record and cannot be restored.');
+    return;
+  }
+  var uname = account.username;
+
+  // Drop anything that is not a well-formed reading rather than trusting the file.
+  var rawIncoming = Array.isArray(data.readings) ? data.readings : [];
+  var incoming = [];
+  for(var ri=0; ri<rawIncoming.length; ri++){
+    var clean = hhSanitizeReading(rawIncoming[ri]);
+    if(clean) incoming.push(clean);
+  }
+  var rejected = rawIncoming.length - incoming.length;
 
   var users  = ls_get(KEYS.users, []) || [];
   var exists = false;
@@ -4349,6 +4428,7 @@ function hhImportBackup(text){
 
   var msg = 'Restore this backup?\n\nAccount: ' + uname
           + '\nReadings in file: ' + incoming.length
+          + (rejected > 0 ? '\nSkipped (malformed): ' + rejected : '')
           + '\nNew to this device: ' + (added > 0 ? added : 0)
           + span + '\n\n'
           + (exists
@@ -4358,15 +4438,13 @@ function hhImportBackup(text){
   if(!confirm(msg)) return;
 
   if(!exists){
-    var rec = {};
-    for(var k in data.account){ if(Object.prototype.hasOwnProperty.call(data.account, k)) rec[k] = data.account[k]; }
-    delete rec.password;              // defence in depth
-    users.push(rec);
+    users.push(account);              // already whitelisted; carries no plaintext password
     ls_set(KEYS.users, users);
   }
 
   ls_set(rKey, merged);
-  if(data.prefs) ls_set(pKey, data.prefs);
+  var cleanPrefs = hhSanitizePrefs(data.prefs);
+  if(cleanPrefs) ls_set(pKey, cleanPrefs);
 
   // Stop the one-time per-user migration shim from later overwriting this.
   ls_set('hh2_migrated_peruser', true);
@@ -5198,20 +5276,20 @@ function renderOutlierList(outliers){
                   d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
     var vals = [];
     if(r.sys || r.dia){
-      vals.push('<span>' + (r.sys||'—') + '<span class="sep">/</span>' + (r.dia||'—') + '<span class="unit">mmHg</span></span>');
+      vals.push('<span>' + escHtml(r.sys||'—') + '<span class="sep">/</span>' + escHtml(r.dia||'—') + '<span class="unit">mmHg</span></span>');
     }
-    if(r.hr){ vals.push('<span style="margin-left:14px;">' + r.hr + '<span class="unit">bpm</span></span>'); }
+    if(r.hr){ vals.push('<span style="margin-left:14px;">' + escHtml(r.hr) + '<span class="unit">bpm</span></span>'); }
     var ctx = [];
-    if(r.posture) ctx.push('<span>' + r.posture + '</span>');
-    if(r.tod)     ctx.push('<span>' + r.tod + '</span>');
+    if(r.posture) ctx.push('<span>' + escHtml(r.posture) + '</span>');
+    if(r.tod)     ctx.push('<span>' + escHtml(r.tod) + '</span>');
     return '<div class="outlier-card">' +
       '<div class="outlier-card-row1"><span>' + dateStr + '</span></div>' +
       '<div class="outlier-card-vals">' + vals.join('') + '</div>' +
       (ctx.length ? '<div class="outlier-card-ctx">' + ctx.join('') + '</div>' : '') +
       '<div class="outlier-card-reason">' + o.reason + '. Likely from exercise, stress, or a measurement quirk.</div>' +
       '<div class="outlier-card-actions">' +
-        '<button class="outlier-action include" onclick="includeOutlier(' + r.ts + ')">That\u2019s accurate \u2014 include it</button>' +
-        '<button class="outlier-action confirm" onclick="confirmOutlier(' + r.ts + ')">Confirmed outlier</button>' +
+        '<button class="outlier-action include" onclick="includeOutlier(' + Number(r.ts) + ')">That\u2019s accurate \u2014 include it</button>' +
+        '<button class="outlier-action confirm" onclick="confirmOutlier(' + Number(r.ts) + ')">Confirmed outlier</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -5597,7 +5675,7 @@ function _drVitalRowHTML(opts){
     var tlbl = (opts.field === 'sys') ? (opts.prefs.goal_sys + '/' + opts.prefs.goal_dia)
               : (opts.field === 'hr') ? opts.prefs.goal_hr
               : (opts.field === 'wt') ? opts.prefs.goal_wt : '';
-    svgInner += '<text x="'+(SP_W-2)+'" y="'+(spark.targetY - 3)+'" text-anchor="end" font-family="DM Mono,monospace" font-size="8.5" fill="#94A3B8" letter-spacing="0.06em">TARGET '+tlbl+'</text>';
+    svgInner += '<text x="'+(SP_W-2)+'" y="'+(spark.targetY - 3)+'" text-anchor="end" font-family="DM Mono,monospace" font-size="8.5" fill="#94A3B8" letter-spacing="0.06em">TARGET '+escHtml(tlbl)+'</text>';
   }
   // Secondary spark (diastolic)
   if(spark2){
@@ -5741,7 +5819,7 @@ function buildDoctorReport(rangeDays){
       scale:{ min:90, max:145, target: prefs.goal_sys || 120 },
       statusLabel: sysStatus, tone: sysTone,
       currentValue: _drFmtNum(s.sys.avg)+'/'+_drFmtNum(s.dia.avg),
-      currentLabel: 'Last reading '+_drFmtDate(lastR.ts,{month:'short',day:'numeric'})+': '+(lastR.sys||'—')+'/'+(lastR.dia||'—'),
+      currentLabel: 'Last reading '+_drFmtDate(lastR.ts,{month:'short',day:'numeric'})+': '+escHtml(lastR.sys||'—')+'/'+escHtml(lastR.dia||'—'),
       trendValue: s.sys.trend, trendUnit:'mmHg', prefs: prefs,
     });
   }
@@ -5758,7 +5836,7 @@ function buildDoctorReport(rangeDays){
       scale:{ min:50, max:90, target: prefs.goal_hr || 65 },
       statusLabel: hrStatus, tone: hrTone,
       currentValue: _drFmtNum(s.hr.avg),
-      currentLabel: 'Last reading: '+(lastHR||'—')+' bpm',
+      currentLabel: 'Last reading: '+escHtml(lastHR||'—')+' bpm',
       trendValue: s.hr.trend, trendUnit:'bpm', prefs: prefs,
     });
   }
