@@ -549,14 +549,17 @@ body.light .hist-ctx-tag{ background:rgba(0,0,0,0.03); }
 .prof-user{font-family:var(--mono);font-size:11px;color:var(--text3);}
 .settings-group-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;padding:0 4px;}
 .settings-group{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;}
 .settings-row:last-child{border-bottom:none;}
 .settings-row:active{background:var(--surface2);}
-.s-row-left{display:flex;align-items:center;gap:12px;}
+/* flex items default to min-width:auto, which stops .s-row-left shrinking and
+   makes long labels run under the right-hand action text on narrow screens. */
+.s-row-left{display:flex;align-items:center;gap:12px;flex:1 1 auto;min-width:0;}
+.s-row-left > div:not(.s-row-icon){min-width:0;}
 .s-row-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.s-row-lbl{font-size:14px;font-weight:600;}
-.s-row-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;}
-.s-row-right{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.s-row-lbl{font-size:14px;font-weight:600;overflow-wrap:break-word;}
+.s-row-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;overflow-wrap:break-word;}
+.s-row-right{font-family:var(--mono);font-size:11px;color:var(--text3);flex-shrink:0;white-space:nowrap;text-align:right;}
 .toggle{width:38px;height:21px;border-radius:11px;background:var(--border);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
 .toggle.on{background:var(--accent);}
 .toggle-knob{position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform 0.2s;}
