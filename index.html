@@ -392,9 +392,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
 /* BOTTOM NAV */
 .bnav{border-top:1px solid var(--border);padding:10px 24px;padding-bottom:max(16px,env(safe-area-inset-bottom,16px));display:flex;justify-content:space-around;position:sticky;bottom:0;background:var(--bg);z-index:10;}
-.bnav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;opacity:0.4;padding:4px 12px;}
-.bnav-item.active{opacity:1;}
-.bnav-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text2);}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;min-height:44px;justify-content:center;color:var(--text2);}
+.bnav-item svg{stroke:currentColor;}
+.bnav-item.active{color:var(--text);}
+.bnav-item.active .bnav-lbl{color:var(--text);}
+.bnav-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:inherit;}
 
 /* SCREEN HEADER */
 .screen-hdr{display:flex;align-items:center;gap:14px;padding:18px 24px 14px;border-bottom:1px solid var(--border);}
@@ -580,7 +582,8 @@ body.light .hist-ctx-tag{ background:rgba(0,0,0,0.03); }
 .reccode-ack input{width:17px;height:17px;flex-shrink:0;margin-top:1px;accent-color:var(--accent);}
 
 /* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:24px 16px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-start;justify-content:center;padding:24px 16px max(24px,env(safe-area-inset-bottom,24px));overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.modal-overlay > *{margin:auto;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 22px 32px;width:100%;max-width:480px;}
 .modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 22px;}
@@ -2530,7 +2533,13 @@ body.light .legal-banner{background:rgba(234,88,12,0.08);border-color:rgba(234,8
 // ─────────────────────────────────────
 var KEYS = { users:'hh2_users', readings:'hh2_readings', prefs:'hh2_prefs', session:'hh2_session', lastuser:'hh2_lastuser' };
 
-function ls_set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+// Returns false when the write did not happen — iOS Private Browsing and a
+// full quota both throw here. Swallowing that silently meant the UI could
+// report "Reading added" for a reading that was never stored.
+function ls_set(k,v){
+  try{ localStorage.setItem(k, JSON.stringify(v)); return true; }
+  catch(e){ return false; }
+}
 function ls_get(k,def){ try{ var v=localStorage.getItem(k); return v!==null ? JSON.parse(v) : def; }catch(e){ return def; } }
 
 // Escapes user-entered text before it goes into innerHTML (name/DOB/etc. in the Doctor Report).
@@ -2818,7 +2827,7 @@ function clearSession(){ ls_set(KEYS.session, null); }
 // READINGS
 // ─────────────────────────────────────
 function getReadings(){ return ls_get(KEYS.readings + '::' + _userNS(), []); }
-function saveReadings(r){ ls_set(KEYS.readings + '::' + _userNS(), r); }
+function saveReadings(r){ return ls_set(KEYS.readings + '::' + _userNS(), r); }
 
 // ─────────────────────────────────────
 // PREFS
@@ -4931,7 +4940,10 @@ function saveInlineReading(){
   var newReading = { ts:saveTs, hr:hr||null, sys:sys||null, dia:dia||null, wt:wt||null,
                      posture:_ctxPosture, tod:_ctxTod || _autoTod(new Date(saveTs)) };
   readings.push(newReading);
-  saveReadings(readings);
+  if(!saveReadings(readings)){
+    alert('This reading could not be saved.\n\nYour browser refused to write to storage — this usually means Private Browsing is on, or the device is out of space. Nothing was recorded.');
+    return;
+  }
 
   // H1·D6 funnel telemetry — distinguish first reading from later
   hh_track(readings.length === 1 ? 'first_reading_logged' : 'reading_logged', {
@@ -5300,7 +5312,10 @@ function saveReading(){
   var saveTs = (_loggerTimestamp && _tsManualEdit) ? _loggerTimestamp.getTime() : Date.now();
   var newReading = { ts:saveTs, hr:hr||null, sys:sys||null, dia:dia||null, wt:wt||null };
   readings.push(newReading);
-  saveReadings(readings);
+  if(!saveReadings(readings)){
+    alert('This reading could not be saved.\n\nYour browser refused to write to storage — this usually means Private Browsing is on, or the device is out of space. Nothing was recorded.');
+    return;
+  }
   closeModal('log-modal');
   refreshHome();
   showAIInsight(newReading, readings);
